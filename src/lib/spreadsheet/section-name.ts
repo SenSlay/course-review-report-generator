@@ -17,6 +17,15 @@ function isSectionCodeToken(token: string) {
   return SECTION_CODE_PATTERN.test(token) && !COURSE_CODE_PATTERN.test(token);
 }
 
+export function inferCourseCodeFromFileName(fileName: string) {
+  const normalizedName = normalizeFileName(fileName);
+  const courseCode = normalizedName
+    .split(" ")
+    .find((token) => COURSE_CODE_PATTERN.test(token));
+
+  return courseCode ?? "";
+}
+
 export function inferSectionNameFromFileName(fileName: string) {
   const normalizedName = normalizeFileName(fileName);
   const tokens = normalizedName.split(" ");

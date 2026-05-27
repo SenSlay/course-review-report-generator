@@ -3,6 +3,7 @@
 import { ChangeEvent, DragEvent, useRef, useState } from "react";
 import type {
   CourseOutcomeCode,
+  CourseReviewReportDetails,
   CourseReviewResult,
   CourseReviewValidationError,
   ParsedSection,
@@ -12,6 +13,7 @@ import type {
 } from "@/types/course-review";
 import { CourseOutcomeMappingPanel } from "@/components/mapping/course-outcome-mapping-panel";
 import { CourseReviewPreviewPanel } from "@/components/preview/course-review-preview-panel";
+import { CourseReviewReportDetailsPanel } from "@/components/report/course-review-report-details-panel";
 import { CourseReviewReportDownloadPanel } from "@/components/report/course-review-report-download-panel";
 import {
   computeCourseReviewResult,
@@ -23,7 +25,10 @@ import {
   updateSectionMapping,
 } from "@/lib/course-review/mapping";
 import { parseSpreadsheetFile } from "@/lib/spreadsheet/parser";
-import { inferSectionNameFromFileName } from "@/lib/spreadsheet/section-name";
+import {
+  inferCourseCodeFromFileName,
+  inferSectionNameFromFileName,
+} from "@/lib/spreadsheet/section-name";
 
 const ACCEPTED_EXCEL_EXTENSIONS = [".xls", ".xlsx"];
 
@@ -69,6 +74,13 @@ type ParsedSectionState = {
   errorMessage?: string;
 };
 
+const EMPTY_REPORT_DETAILS: CourseReviewReportDetails = {
+  courseCode: "",
+  courseTitle: "",
+  academicYear: "",
+  quarter: "",
+};
+
 export function SpreadsheetUploadWorkspace() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedSpreadsheetFile[]>(
@@ -87,6 +99,10 @@ export function SpreadsheetUploadWorkspace() {
   const [computationErrors, setComputationErrors] = useState<
     CourseReviewValidationError[]
   >([]);
+  const [reportDetails, setReportDetails] = useState<CourseReviewReportDetails>(
+    EMPTY_REPORT_DETAILS,
+  );
+  const [courseCodeWasEdited, setCourseCodeWasEdited] = useState(false);
 
   function addFiles(files: FileList | File[]) {
     const fileList = Array.from(files);
@@ -131,8 +147,34 @@ export function SpreadsheetUploadWorkspace() {
         message: `${file.name} was skipped. Upload .xls or .xlsx files only.`,
       })),
     );
+    inferCourseCodeFromUploadedFiles(nextUploadedFiles);
     clearComputationState();
     parseUploadedFiles(nextUploadedFiles);
+  }
+
+  function inferCourseCodeFromUploadedFiles(files: UploadedSpreadsheetFile[]) {
+    if (courseCodeWasEdited) {
+      return;
+    }
+
+    const inferredCourseCode = files
+      .map((uploadedFile) => inferCourseCodeFromFileName(uploadedFile.fileName))
+      .find(Boolean);
+
+    if (!inferredCourseCode) {
+      return;
+    }
+
+    setReportDetails((currentDetails) => {
+      if (currentDetails.courseCode.trim().length > 0) {
+        return currentDetails;
+      }
+
+      return {
+        ...currentDetails,
+        courseCode: inferredCourseCode,
+      };
+    });
   }
 
   function parseUploadedFiles(files: UploadedSpreadsheetFile[]) {
@@ -300,6 +342,20 @@ export function SpreadsheetUploadWorkspace() {
     }));
   }
 
+  function updateReportDetails(
+    field: keyof CourseReviewReportDetails,
+    value: string,
+  ) {
+    if (field === "courseCode") {
+      setCourseCodeWasEdited(true);
+    }
+
+    setReportDetails((currentDetails) => ({
+      ...currentDetails,
+      [field]: value,
+    }));
+  }
+
   function computeResults() {
     const validationErrors = validateCourseReviewComputation({
       parsedSections: successfullyParsedSections,
@@ -317,6 +373,7 @@ export function SpreadsheetUploadWorkspace() {
       computeCourseReviewResult({
         parsedSections: successfullyParsedSections,
         mappingsBySectionId,
+        ...reportDetails,
       }),
     );
   }
@@ -488,6 +545,13 @@ export function SpreadsheetUploadWorkspace() {
       />
 
       {successfullyParsedSections.length > 0 ? (
+        <CourseReviewReportDetailsPanel
+          details={reportDetails}
+          onDetailsChange={updateReportDetails}
+        />
+      ) : null}
+
+      {successfullyParsedSections.length > 0 ? (
         <CourseReviewPreviewPanel
           errors={computationErrors}
           result={courseReviewResult}
@@ -495,7 +559,10 @@ export function SpreadsheetUploadWorkspace() {
         />
       ) : null}
 
-      <CourseReviewReportDownloadPanel result={courseReviewResult} />
+      <CourseReviewReportDownloadPanel
+        result={courseReviewResult}
+        reportDetails={reportDetails}
+      />
     </>
   );
 }

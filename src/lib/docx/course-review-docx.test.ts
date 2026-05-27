@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { CourseReviewResult } from "@/types/course-review";
 import {
   createCourseReviewReportFileName,
+  formatDateOfReview,
   prepareCourseReviewDocxTemplateData,
   renderCourseReviewDocxBytes,
 } from "./course-review-docx";
@@ -19,6 +20,15 @@ describe("course review DOCX generation", () => {
       createCourseReviewResult(),
     );
 
+    expect(templateData).toEqual(
+      expect.objectContaining({
+        courseCode: "CSS188-3",
+        dateOfReview: "May 27, 2026",
+        courseTitle: "",
+        academicYear: "",
+        quarter: "",
+      }),
+    );
     expect(templateData.sections[0]).toEqual({
       sectionName: "FOPM01",
       outcomes: [
@@ -65,7 +75,15 @@ describe("course review DOCX generation", () => {
     expect(documentXml).toContain("66.67%");
     expect(documentXml).toContain("PASSED");
     expect(getDocumentText(documentXml)).toMatch(/COURSE\s+REVIEW\s+\(CS\)/);
+    expect(getDocumentText(documentXml)).toContain("CSS188-3");
+    expect(getDocumentText(documentXml)).toContain("May 27, 2026");
     expect(getDocumentText(documentXml)).toContain("Change Syllabus");
+    expect(getDocumentText(documentXml)).not.toContain("May 7");
+    expect(getDocumentText(documentXml)).not.toContain(
+      "Data Structures and Algorithms",
+    );
+    expect(getDocumentText(documentXml)).not.toContain("2022-23");
+    expect(getDocumentText(documentXml)).not.toContain("3 Q");
     expect(getDocumentText(documentXml)).not.toContain("CSS130 BM2");
     expect(documentXml).not.toContain("{#sections}");
     expect(documentXml).not.toContain("{#outcomes}");
@@ -73,14 +91,19 @@ describe("course review DOCX generation", () => {
 
   it("creates a stable report file name from section names", () => {
     expect(createCourseReviewReportFileName(createCourseReviewResult())).toBe(
-      "course-review-report-fopm01-fopm02.docx",
+      "course-review-report-css188-3-fopm01-fopm02.docx",
     );
+  });
+
+  it("formats the generated date of review", () => {
+    expect(formatDateOfReview(new Date(2026, 4, 27))).toBe("May 27, 2026");
   });
 });
 
 function createCourseReviewResult(): CourseReviewResult {
   return {
-    courseCode: "",
+    courseCode: "CSS188-3",
+    dateOfReview: "May 27, 2026",
     sections: [
       {
         id: "section-1",

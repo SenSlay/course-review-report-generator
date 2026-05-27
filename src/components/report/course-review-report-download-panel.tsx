@@ -1,19 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import type { CourseReviewResult } from "@/types/course-review";
+import type {
+  CourseReviewReportDetails,
+  CourseReviewResult,
+} from "@/types/course-review";
 import {
   createCourseReviewReportFileName,
+  formatDateOfReview,
   generateCourseReviewDocx,
 } from "@/lib/docx/course-review-docx";
 import { downloadBlob } from "@/lib/docx/download";
 
 type CourseReviewReportDownloadPanelProps = {
   result: CourseReviewResult | null;
+  reportDetails: CourseReviewReportDetails;
 };
 
 export function CourseReviewReportDownloadPanel({
   result,
+  reportDetails,
 }: CourseReviewReportDownloadPanelProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -31,8 +37,18 @@ export function CourseReviewReportDownloadPanel({
     setErrorMessage("");
 
     try {
-      const reportBlob = await generateCourseReviewDocx(result);
-      downloadBlob(reportBlob, createCourseReviewReportFileName(result));
+      const resultWithReportDetails = {
+        ...result,
+        ...reportDetails,
+        dateOfReview: formatDateOfReview(new Date()),
+      };
+      const reportBlob = await generateCourseReviewDocx(
+        resultWithReportDetails,
+      );
+      downloadBlob(
+        reportBlob,
+        createCourseReviewReportFileName(resultWithReportDetails),
+      );
     } catch (error) {
       setErrorMessage(
         error instanceof Error

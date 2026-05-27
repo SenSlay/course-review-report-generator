@@ -1,7 +1,10 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { parseSpreadsheetBuffer } from "./parser";
-import { inferSectionNameFromFileName } from "./section-name";
+import {
+  inferCourseCodeFromFileName,
+  inferSectionNameFromFileName,
+} from "./section-name";
 
 const SAMPLE_GRADE_EXPORT = new URL(
   "../../../samples/grades/gc_CSS188-3_FOPM01_2T3031_fullgc_2030-05-18-09-57-51.xls",
@@ -83,5 +86,17 @@ describe("spreadsheet parser", () => {
         "gc_CSS188-3_FOPM01_2T3031_fullgc_2030-05-18-09-57-51.xls",
       ),
     ).toBe("FOPM01");
+  });
+
+  it("infers the course code from a Grade Center filename", () => {
+    expect(
+      inferCourseCodeFromFileName(
+        "gc_CSS188-3_FOPM01_2T3031_fullgc_2030-05-18-09-57-51.xls",
+      ),
+    ).toBe("CSS188-3");
+  });
+
+  it("returns a blank course code when the filename has no course code", () => {
+    expect(inferCourseCodeFromFileName("plain-export.xls")).toBe("");
   });
 });

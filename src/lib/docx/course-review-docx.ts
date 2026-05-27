@@ -14,6 +14,11 @@ type GenerateCourseReviewDocxOptions = {
 };
 
 export type CourseReviewDocxTemplateData = {
+  courseCode: string;
+  dateOfReview: string;
+  courseTitle: string;
+  academicYear: string;
+  quarter: string;
   sections: {
     sectionName: string;
     outcomes: {
@@ -72,6 +77,11 @@ export function prepareCourseReviewDocxTemplateData(
   result: CourseReviewResult,
 ): CourseReviewDocxTemplateData {
   return {
+    courseCode: result.courseCode ?? "",
+    dateOfReview: result.dateOfReview ?? "",
+    courseTitle: result.courseTitle ?? "",
+    academicYear: result.academicYear ?? "",
+    quarter: result.quarter ?? "",
     sections: result.sections.map((section) => ({
       sectionName: section.sectionName,
       outcomes: section.outcomes.map((outcome) => ({
@@ -91,15 +101,25 @@ export function prepareCourseReviewDocxTemplateData(
 }
 
 export function createCourseReviewReportFileName(result: CourseReviewResult) {
+  const courseCodePart = slugifyFileNamePart(result.courseCode);
   const sectionPart = result.sections
     .map((section) => slugifyFileNamePart(section.sectionName))
     .filter(Boolean)
     .slice(0, 3)
     .join("-");
+  const reportParts = [courseCodePart, sectionPart].filter(Boolean).join("-");
 
-  return sectionPart.length > 0
-    ? `course-review-report-${sectionPart}.docx`
+  return reportParts.length > 0
+    ? `course-review-report-${reportParts}.docx`
     : "course-review-report.docx";
+}
+
+export function formatDateOfReview(date: Date) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
 }
 
 async function fetchCourseReviewTemplate(templateUrl: string) {

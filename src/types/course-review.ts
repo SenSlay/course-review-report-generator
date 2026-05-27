@@ -84,7 +84,15 @@ export type CourseReviewResult = {
   courseTitle?: string;
   academicYear?: string;
   quarter?: string;
+  dateOfReview?: string;
   sections: SectionResult[];
+};
+
+export type CourseReviewReportDetails = {
+  courseCode: string;
+  courseTitle: string;
+  academicYear: string;
+  quarter: string;
 };
 
 export type CourseReviewValidationError = {

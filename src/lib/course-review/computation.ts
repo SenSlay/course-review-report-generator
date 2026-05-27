@@ -23,6 +23,9 @@ type ComputeCourseReviewResultOptions = {
   parsedSections: ParsedSection[];
   mappingsBySectionId: Record<string, SectionCourseOutcomeMappingState>;
   courseCode?: string;
+  courseTitle?: string;
+  academicYear?: string;
+  quarter?: string;
 };
 
 export function getNumericScore(value: SpreadsheetCellValue | undefined) {
@@ -147,6 +150,9 @@ export function computeCourseReviewResult({
   parsedSections,
   mappingsBySectionId,
   courseCode = "",
+  courseTitle = "",
+  academicYear = "",
+  quarter = "",
 }: ComputeCourseReviewResultOptions): CourseReviewResult {
   const validationErrors = validateCourseReviewComputation({
     parsedSections,
@@ -159,6 +165,9 @@ export function computeCourseReviewResult({
 
   return {
     courseCode,
+    courseTitle,
+    academicYear,
+    quarter,
     sections: parsedSections.map((parsedSection) =>
       computeSectionResult(parsedSection, mappingsBySectionId[parsedSection.id]),
     ),
