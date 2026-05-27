@@ -1,7 +1,13 @@
 "use client";
 
 import { ChangeEvent, DragEvent, useRef, useState } from "react";
-import type { UploadedSpreadsheetFile } from "@/types/course-review";
+import type {
+  CourseOutcomeCode,
+  ParsedSection,
+  SpreadsheetParseStatus,
+  UploadedSpreadsheetFile,
+} from "@/types/course-review";
+import { parseSpreadsheetFile } from "@/lib/spreadsheet/parser";
 import { inferSectionNameFromFileName } from "@/lib/spreadsheet/section-name";
 
 const ACCEPTED_EXCEL_EXTENSIONS = [".xls", ".xlsx"];
@@ -41,6 +47,15 @@ type UploadError = {
   message: string;
 };
 
+type ParsedSectionState = {
+  status: SpreadsheetParseStatus;
+  sectionName?: string;
+  parsedSection?: ParsedSection;
+  errorMessage?: string;
+};
+
+const COURSE_OUTCOME_CODES: CourseOutcomeCode[] = ["CO1", "CO2", "CO3"];
+
 export function SpreadsheetUploadWorkspace() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedSpreadsheetFile[]>(
@@ -48,6 +63,9 @@ export function SpreadsheetUploadWorkspace() {
   );
   const [isDragging, setIsDragging] = useState(false);
   const [uploadErrors, setUploadErrors] = useState<UploadError[]>([]);
+  const [parsedSections, setParsedSections] = useState<
+    Record<string, ParsedSectionState>
+  >({});
 
   function addFiles(files: FileList | File[]) {
     const fileList = Array.from(files);
@@ -65,12 +83,90 @@ export function SpreadsheetUploadWorkspace() {
       ...currentFiles,
       ...nextUploadedFiles,
     ]);
+    setParsedSections((currentSections) => ({
+      ...currentSections,
+      ...Object.fromEntries(
+        nextUploadedFiles.map((uploadedFile) => [
+          uploadedFile.id,
+          {
+            status: "parsing" satisfies SpreadsheetParseStatus,
+            sectionName: uploadedFile.sectionName,
+          },
+        ]),
+      ),
+    }));
     setUploadErrors(
       rejectedFiles.map((file, index) => ({
         id: `${file.name}-${Date.now()}-${index}`,
         message: `${file.name} was skipped. Upload .xls or .xlsx files only.`,
       })),
     );
+    parseUploadedFiles(nextUploadedFiles);
+  }
+
+  function parseUploadedFiles(files: UploadedSpreadsheetFile[]) {
+    files.forEach(async (uploadedFile) => {
+      try {
+        const parsedSection = await parseSpreadsheetFile(uploadedFile.file, {
+          id: uploadedFile.id,
+          sectionName: uploadedFile.sectionName,
+        });
+
+        setParsedSections((currentSections) => ({
+          ...currentSections,
+          ...getParsedSectionUpdate(currentSections, uploadedFile.id, {
+            status: "parsed",
+            sectionName: parsedSection.sectionName,
+            parsedSection,
+          }),
+        }));
+      } catch (error) {
+        setParsedSections((currentSections) => ({
+          ...currentSections,
+          ...getParsedSectionUpdate(currentSections, uploadedFile.id, {
+            status: "failed",
+            sectionName: uploadedFile.sectionName,
+            errorMessage:
+              error instanceof Error
+                ? error.message
+                : "The spreadsheet could not be parsed.",
+          }),
+        }));
+      }
+    });
+  }
+
+  function getParsedSectionUpdate(
+    currentSections: Record<string, ParsedSectionState>,
+    uploadedFileId: string,
+    nextSection: ParsedSectionState,
+  ) {
+    const currentSection = currentSections[uploadedFileId];
+
+    if (!currentSection) {
+      return {};
+    }
+
+    if (!nextSection.parsedSection) {
+      return {
+        [uploadedFileId]: {
+          ...nextSection,
+          sectionName: currentSection.sectionName ?? nextSection.sectionName,
+        },
+      };
+    }
+
+    return {
+      [uploadedFileId]: {
+        ...nextSection,
+        sectionName: currentSection.sectionName ?? nextSection.sectionName,
+        parsedSection: {
+          ...nextSection.parsedSection,
+          sectionName:
+            currentSection.sectionName ?? nextSection.parsedSection.sectionName,
+        },
+      },
+    };
   }
 
   function handleFileInputChange(event: ChangeEvent<HTMLInputElement>) {
@@ -106,12 +202,47 @@ export function SpreadsheetUploadWorkspace() {
         uploadedFile.id === id ? { ...uploadedFile, sectionName } : uploadedFile,
       ),
     );
+    setParsedSections((currentSections) => {
+      const currentSection = currentSections[id];
+
+      if (!currentSection) {
+        return currentSections;
+      }
+
+      if (!currentSection.parsedSection) {
+        return {
+          ...currentSections,
+          [id]: {
+            ...currentSection,
+            sectionName,
+          },
+        };
+      }
+
+      return {
+        ...currentSections,
+        [id]: {
+          ...currentSection,
+          sectionName,
+          parsedSection: {
+            ...currentSection.parsedSection,
+            sectionName,
+          },
+        },
+      };
+    });
   }
 
   function removeFile(id: string) {
     setUploadedFiles((currentFiles) =>
       currentFiles.filter((uploadedFile) => uploadedFile.id !== id),
     );
+    setParsedSections((currentSections) => {
+      const remainingSections = { ...currentSections };
+      delete remainingSections[id];
+
+      return remainingSections;
+    });
   }
 
   return (
@@ -193,7 +324,7 @@ export function SpreadsheetUploadWorkspace() {
                 <tr>
                   <th className="px-4 py-3">File</th>
                   <th className="px-4 py-3">Section Name</th>
-                  <th className="w-28 px-4 py-3">Size</th>
+                  <th className="min-w-96 px-4 py-3">Parsed Columns</th>
                   <th className="w-24 px-4 py-3 text-right">Action</th>
                 </tr>
               </thead>
@@ -201,12 +332,16 @@ export function SpreadsheetUploadWorkspace() {
                 {uploadedFiles.map((uploadedFile) => {
                   const sectionNameIsMissing =
                     uploadedFile.sectionName.trim().length === 0;
+                  const parsedSectionState = parsedSections[uploadedFile.id];
 
                   return (
                     <tr key={uploadedFile.id}>
                       <td className="max-w-xs px-4 py-3 align-top">
                         <p className="break-words font-medium text-zinc-950">
                           {uploadedFile.fileName}
+                        </p>
+                        <p className="mt-1 text-xs text-zinc-500">
+                          {formatFileSize(uploadedFile.file.size)}
                         </p>
                       </td>
                       <td className="min-w-72 px-4 py-3 align-top">
@@ -235,8 +370,8 @@ export function SpreadsheetUploadWorkspace() {
                           </p>
                         ) : null}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 align-top text-zinc-600">
-                        {formatFileSize(uploadedFile.file.size)}
+                      <td className="px-4 py-3 align-top text-zinc-600">
+                        <ParseSummary parseState={parsedSectionState} />
                       </td>
                       <td className="px-4 py-3 text-right align-top">
                         <button
@@ -256,5 +391,71 @@ export function SpreadsheetUploadWorkspace() {
         )}
       </div>
     </section>
+  );
+}
+
+function ParseSummary({
+  parseState,
+}: {
+  parseState: ParsedSectionState | undefined;
+}) {
+  if (!parseState || parseState.status === "idle") {
+    return <p className="text-sm text-zinc-500">Waiting to parse.</p>;
+  }
+
+  if (parseState.status === "parsing") {
+    return <p className="text-sm font-medium text-teal-700">Parsing...</p>;
+  }
+
+  if (parseState.status === "failed") {
+    return (
+      <p className="text-sm font-medium text-red-700">
+        {parseState.errorMessage ?? "The spreadsheet could not be parsed."}
+      </p>
+    );
+  }
+
+  if (!parseState.parsedSection) {
+    return null;
+  }
+
+  const parsedSection = parseState.parsedSection;
+  const validStudentCount = parsedSection.rows.filter(
+    (row) => row.isValidStudent,
+  ).length;
+  const boundaryCodes = parsedSection.courseOutcomeBoundaries
+    .map((column) => column.courseOutcomeCode)
+    .filter(Boolean)
+    .join(", ");
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm font-medium text-teal-700">Parsed successfully</p>
+      <p className="text-xs text-zinc-600">
+        {validStudentCount} valid students •{" "}
+        {parsedSection.assessmentColumns.length} assessment columns •{" "}
+        {boundaryCodes.length > 0
+          ? `${boundaryCodes} boundaries`
+          : "No CO boundaries"}
+      </p>
+      <div className="space-y-1">
+        {COURSE_OUTCOME_CODES.map((coCode) => {
+          const groupColumns = parsedSection.assessmentColumns.filter(
+            (column) => column.assessmentGroup === coCode,
+          );
+
+          if (groupColumns.length === 0) {
+            return null;
+          }
+
+          return (
+            <p key={coCode} className="text-xs text-zinc-700">
+              <span className="font-semibold">{coCode}:</span>{" "}
+              {groupColumns.map((column) => column.label).join(", ")}
+            </p>
+          );
+        })}
+      </div>
+    </div>
   );
 }

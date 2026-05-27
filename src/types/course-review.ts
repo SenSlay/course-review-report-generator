@@ -4,6 +4,8 @@ export type CourseOutcomeRemark = "PASSED" | "FAILED";
 
 export type SpreadsheetCellValue = string | number | boolean | Date | null;
 
+export type SpreadsheetParseStatus = "idle" | "parsing" | "parsed" | "failed";
+
 export type UploadedSpreadsheetFile = {
   id: string;
   file: File;
@@ -16,7 +18,13 @@ export type SpreadsheetColumn = {
   label: string;
   index: number;
   isPossibleAssessment: boolean;
+  rawHeader?: string;
+  gradeCenterId?: string;
+  totalPointsLabel?: string;
   totalPoints?: number;
+  isCourseOutcomeBoundary?: boolean;
+  courseOutcomeCode?: CourseOutcomeCode;
+  assessmentGroup?: CourseOutcomeCode;
 };
 
 export type SpreadsheetRow = {
@@ -32,6 +40,9 @@ export type ParsedSection = {
   sectionName: string;
   columns: SpreadsheetColumn[];
   rows: SpreadsheetRow[];
+  headerRowIndex: number;
+  assessmentColumns: SpreadsheetColumn[];
+  courseOutcomeBoundaries: SpreadsheetColumn[];
 };
 
 export type CourseOutcomeMapping = {
