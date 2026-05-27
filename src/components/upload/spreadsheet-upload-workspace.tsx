@@ -3,12 +3,19 @@
 import { ChangeEvent, DragEvent, useRef, useState } from "react";
 import type {
   CourseOutcomeCode,
+  CourseReviewResult,
+  CourseReviewValidationError,
   ParsedSection,
   SectionCourseOutcomeMappingState,
   SpreadsheetParseStatus,
   UploadedSpreadsheetFile,
 } from "@/types/course-review";
 import { CourseOutcomeMappingPanel } from "@/components/mapping/course-outcome-mapping-panel";
+import { ComputationResultsPanel } from "@/components/preview/computation-results-panel";
+import {
+  computeCourseReviewResult,
+  validateCourseReviewComputation,
+} from "@/lib/course-review/computation";
 import {
   COURSE_OUTCOME_CODES,
   createEmptySectionMapping,
@@ -74,6 +81,11 @@ export function SpreadsheetUploadWorkspace() {
   const [mappingsBySectionId, setMappingsBySectionId] = useState<
     Record<string, SectionCourseOutcomeMappingState>
   >({});
+  const [courseReviewResult, setCourseReviewResult] =
+    useState<CourseReviewResult | null>(null);
+  const [computationErrors, setComputationErrors] = useState<
+    CourseReviewValidationError[]
+  >([]);
 
   function addFiles(files: FileList | File[]) {
     const fileList = Array.from(files);
@@ -118,6 +130,7 @@ export function SpreadsheetUploadWorkspace() {
         message: `${file.name} was skipped. Upload .xls or .xlsx files only.`,
       })),
     );
+    clearComputationState();
     parseUploadedFiles(nextUploadedFiles);
   }
 
@@ -214,6 +227,7 @@ export function SpreadsheetUploadWorkspace() {
   }
 
   function updateSectionName(id: string, sectionName: string) {
+    clearComputationState();
     setUploadedFiles((currentFiles) =>
       currentFiles.map((uploadedFile) =>
         uploadedFile.id === id ? { ...uploadedFile, sectionName } : uploadedFile,
@@ -251,6 +265,7 @@ export function SpreadsheetUploadWorkspace() {
   }
 
   function removeFile(id: string) {
+    clearComputationState();
     setUploadedFiles((currentFiles) =>
       currentFiles.filter((uploadedFile) => uploadedFile.id !== id),
     );
@@ -273,6 +288,7 @@ export function SpreadsheetUploadWorkspace() {
     coCode: CourseOutcomeCode,
     columnKey: string,
   ) {
+    clearComputationState();
     setMappingsBySectionId((currentMappings) => ({
       ...currentMappings,
       [sectionId]: updateSectionMapping(
@@ -281,6 +297,32 @@ export function SpreadsheetUploadWorkspace() {
         columnKey,
       ),
     }));
+  }
+
+  function computeResults() {
+    const validationErrors = validateCourseReviewComputation({
+      parsedSections: successfullyParsedSections,
+      mappingsBySectionId,
+    });
+
+    if (validationErrors.length > 0) {
+      setComputationErrors(validationErrors);
+      setCourseReviewResult(null);
+      return;
+    }
+
+    setComputationErrors([]);
+    setCourseReviewResult(
+      computeCourseReviewResult({
+        parsedSections: successfullyParsedSections,
+        mappingsBySectionId,
+      }),
+    );
+  }
+
+  function clearComputationState() {
+    setComputationErrors([]);
+    setCourseReviewResult(null);
   }
 
   const successfullyParsedSections = uploadedFiles
@@ -443,6 +485,14 @@ export function SpreadsheetUploadWorkspace() {
         mappingsBySectionId={mappingsBySectionId}
         onMappingChange={updateCourseOutcomeMapping}
       />
+
+      {successfullyParsedSections.length > 0 ? (
+        <ComputationResultsPanel
+          errors={computationErrors}
+          result={courseReviewResult}
+          onCompute={computeResults}
+        />
+      ) : null}
     </>
   );
 }

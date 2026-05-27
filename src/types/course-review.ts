@@ -86,3 +86,9 @@ export type CourseReviewResult = {
   quarter?: string;
   sections: SectionResult[];
 };
+
+export type CourseReviewValidationError = {
+  sectionId?: string;
+  coCode?: CourseOutcomeCode;
+  message: string;
+};
