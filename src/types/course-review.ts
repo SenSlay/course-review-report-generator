@@ -1,0 +1,72 @@
+export type CourseOutcomeCode = "CO1" | "CO2" | "CO3";
+
+export type CourseOutcomeRemark = "PASSED" | "FAILED";
+
+export type SpreadsheetCellValue = string | number | boolean | Date | null;
+
+export type UploadedSpreadsheetFile = {
+  id: string;
+  file: File;
+  fileName: string;
+  sectionName: string;
+};
+
+export type SpreadsheetColumn = {
+  key: string;
+  label: string;
+  index: number;
+  isPossibleAssessment: boolean;
+  totalPoints?: number;
+};
+
+export type SpreadsheetRow = {
+  id: string;
+  rowIndex: number;
+  cells: Record<string, SpreadsheetCellValue>;
+  isValidStudent: boolean;
+};
+
+export type ParsedSection = {
+  id: string;
+  fileName: string;
+  sectionName: string;
+  columns: SpreadsheetColumn[];
+  rows: SpreadsheetRow[];
+};
+
+export type CourseOutcomeMapping = {
+  coCode: CourseOutcomeCode;
+  columnKey: string;
+};
+
+export type SectionCourseOutcomeMappings = {
+  sectionId: string;
+  mappings: CourseOutcomeMapping[];
+};
+
+export type OutcomeResult = {
+  coCode: CourseOutcomeCode;
+  assessmentTask: string;
+  minSatisfactoryPercent: number;
+  targetPassedPercent: number;
+  frequencyPassed: number;
+  percentagePassed: number;
+  remarks: CourseOutcomeRemark;
+  recommendation: "";
+};
+
+export type SectionResult = {
+  id: string;
+  sectionName: string;
+  fileName: string;
+  totalStudents: number;
+  outcomes: OutcomeResult[];
+};
+
+export type CourseReviewResult = {
+  courseCode: string;
+  courseTitle?: string;
+  academicYear?: string;
+  quarter?: string;
+  sections: SectionResult[];
+};
