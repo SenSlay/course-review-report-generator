@@ -12,6 +12,7 @@ import type {
 } from "@/types/course-review";
 import { CourseOutcomeMappingPanel } from "@/components/mapping/course-outcome-mapping-panel";
 import { CourseReviewPreviewPanel } from "@/components/preview/course-review-preview-panel";
+import { CourseReviewReportDownloadPanel } from "@/components/report/course-review-report-download-panel";
 import {
   computeCourseReviewResult,
   validateCourseReviewComputation,
@@ -493,6 +494,8 @@ export function SpreadsheetUploadWorkspace() {
           onCompute={computeResults}
         />
       ) : null}
+
+      <CourseReviewReportDownloadPanel result={courseReviewResult} />
     </>
   );
 }
