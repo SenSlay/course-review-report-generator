@@ -4,9 +4,16 @@ import { ChangeEvent, DragEvent, useRef, useState } from "react";
 import type {
   CourseOutcomeCode,
   ParsedSection,
+  SectionCourseOutcomeMappingState,
   SpreadsheetParseStatus,
   UploadedSpreadsheetFile,
 } from "@/types/course-review";
+import { CourseOutcomeMappingPanel } from "@/components/mapping/course-outcome-mapping-panel";
+import {
+  COURSE_OUTCOME_CODES,
+  createEmptySectionMapping,
+  updateSectionMapping,
+} from "@/lib/course-review/mapping";
 import { parseSpreadsheetFile } from "@/lib/spreadsheet/parser";
 import { inferSectionNameFromFileName } from "@/lib/spreadsheet/section-name";
 
@@ -54,8 +61,6 @@ type ParsedSectionState = {
   errorMessage?: string;
 };
 
-const COURSE_OUTCOME_CODES: CourseOutcomeCode[] = ["CO1", "CO2", "CO3"];
-
 export function SpreadsheetUploadWorkspace() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedSpreadsheetFile[]>(
@@ -65,6 +70,9 @@ export function SpreadsheetUploadWorkspace() {
   const [uploadErrors, setUploadErrors] = useState<UploadError[]>([]);
   const [parsedSections, setParsedSections] = useState<
     Record<string, ParsedSectionState>
+  >({});
+  const [mappingsBySectionId, setMappingsBySectionId] = useState<
+    Record<string, SectionCourseOutcomeMappingState>
   >({});
 
   function addFiles(files: FileList | File[]) {
@@ -92,6 +100,15 @@ export function SpreadsheetUploadWorkspace() {
             status: "parsing" satisfies SpreadsheetParseStatus,
             sectionName: uploadedFile.sectionName,
           },
+        ]),
+      ),
+    }));
+    setMappingsBySectionId((currentMappings) => ({
+      ...currentMappings,
+      ...Object.fromEntries(
+        nextUploadedFiles.map((uploadedFile) => [
+          uploadedFile.id,
+          createEmptySectionMapping(),
         ]),
       ),
     }));
@@ -243,154 +260,190 @@ export function SpreadsheetUploadWorkspace() {
 
       return remainingSections;
     });
+    setMappingsBySectionId((currentMappings) => {
+      const remainingMappings = { ...currentMappings };
+      delete remainingMappings[id];
+
+      return remainingMappings;
+    });
   }
 
+  function updateCourseOutcomeMapping(
+    sectionId: string,
+    coCode: CourseOutcomeCode,
+    columnKey: string,
+  ) {
+    setMappingsBySectionId((currentMappings) => ({
+      ...currentMappings,
+      [sectionId]: updateSectionMapping(
+        currentMappings[sectionId] ?? createEmptySectionMapping(),
+        coCode,
+        columnKey,
+      ),
+    }));
+  }
+
+  const successfullyParsedSections = uploadedFiles
+    .map((uploadedFile) => parsedSections[uploadedFile.id]?.parsedSection)
+    .filter((parsedSection): parsedSection is ParsedSection =>
+      Boolean(parsedSection),
+    );
+
   return (
-    <section className="w-full border border-zinc-200 bg-white shadow-sm">
-      <div className="border-b border-zinc-200 px-4 py-4 sm:px-6">
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-zinc-950">
-              Upload Grade Spreadsheets
-            </h2>
-            <p className="text-sm text-zinc-600">
-              Each Excel file will be treated as one course section.
-            </p>
-          </div>
-          <div className="text-sm font-medium text-zinc-700">
-            {uploadedFiles.length}{" "}
-            {uploadedFiles.length === 1 ? "section" : "sections"}
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-5 p-4 sm:p-6">
-        <div
-          className={`flex min-h-44 flex-col items-center justify-center border-2 border-dashed px-4 py-8 text-center transition-colors ${
-            isDragging
-              ? "border-teal-500 bg-teal-50"
-              : "border-zinc-300 bg-zinc-50"
-          }`}
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".xls,.xlsx"
-            multiple
-            className="sr-only"
-            onChange={handleFileInputChange}
-          />
-          <div className="max-w-xl space-y-3">
-            <p className="text-base font-semibold text-zinc-950">
-              Drop Excel files here
-            </p>
-            <p className="text-sm text-zinc-600">
-              You can upload one file or several section files at the same time.
-            </p>
-            <button
-              type="button"
-              className="inline-flex h-10 items-center justify-center border border-zinc-900 bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              Choose files
-            </button>
+    <>
+      <section className="w-full border border-zinc-200 bg-white shadow-sm">
+        <div className="border-b border-zinc-200 px-4 py-4 sm:px-6">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-zinc-950">
+                Upload Grade Spreadsheets
+              </h2>
+              <p className="text-sm text-zinc-600">
+                Each Excel file will be treated as one course section.
+              </p>
+            </div>
+            <div className="text-sm font-medium text-zinc-700">
+              {uploadedFiles.length}{" "}
+              {uploadedFiles.length === 1 ? "section" : "sections"}
+            </div>
           </div>
         </div>
 
-        {uploadErrors.length > 0 ? (
-          <div className="border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            {uploadErrors.map((error) => (
-              <p key={error.id}>{error.message}</p>
-            ))}
+        <div className="space-y-5 p-4 sm:p-6">
+          <div
+            className={`flex min-h-44 flex-col items-center justify-center border-2 border-dashed px-4 py-8 text-center transition-colors ${
+              isDragging
+                ? "border-teal-500 bg-teal-50"
+                : "border-zinc-300 bg-zinc-50"
+            }`}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xls,.xlsx"
+              multiple
+              className="sr-only"
+              onChange={handleFileInputChange}
+            />
+            <div className="max-w-xl space-y-3">
+              <p className="text-base font-semibold text-zinc-950">
+                Drop Excel files here
+              </p>
+              <p className="text-sm text-zinc-600">
+                You can upload one file or several section files at the same
+                time.
+              </p>
+              <button
+                type="button"
+                className="inline-flex h-10 items-center justify-center border border-zinc-900 bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Choose files
+              </button>
+            </div>
           </div>
-        ) : null}
 
-        {uploadedFiles.length === 0 ? (
-          <div className="border border-zinc-200 bg-white px-4 py-8 text-center">
-            <h3 className="text-sm font-semibold text-zinc-950">
-              No spreadsheets uploaded yet
-            </h3>
-            <p className="mt-1 text-sm text-zinc-600">
-              Uploaded files will appear here as editable section entries.
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto border border-zinc-200">
-            <table className="min-w-full divide-y divide-zinc-200 text-left text-sm">
-              <thead className="bg-zinc-50 text-xs font-semibold uppercase text-zinc-600">
-                <tr>
-                  <th className="px-4 py-3">File</th>
-                  <th className="px-4 py-3">Section Name</th>
-                  <th className="min-w-96 px-4 py-3">Parsed Columns</th>
-                  <th className="w-24 px-4 py-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-200 bg-white">
-                {uploadedFiles.map((uploadedFile) => {
-                  const sectionNameIsMissing =
-                    uploadedFile.sectionName.trim().length === 0;
-                  const parsedSectionState = parsedSections[uploadedFile.id];
+          {uploadErrors.length > 0 ? (
+            <div className="border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              {uploadErrors.map((error) => (
+                <p key={error.id}>{error.message}</p>
+              ))}
+            </div>
+          ) : null}
 
-                  return (
-                    <tr key={uploadedFile.id}>
-                      <td className="max-w-xs px-4 py-3 align-top">
-                        <p className="break-words font-medium text-zinc-950">
-                          {uploadedFile.fileName}
-                        </p>
-                        <p className="mt-1 text-xs text-zinc-500">
-                          {formatFileSize(uploadedFile.file.size)}
-                        </p>
-                      </td>
-                      <td className="min-w-72 px-4 py-3 align-top">
-                        <label className="sr-only" htmlFor={uploadedFile.id}>
-                          Section name for {uploadedFile.fileName}
-                        </label>
-                        <input
-                          id={uploadedFile.id}
-                          type="text"
-                          value={uploadedFile.sectionName}
-                          className={`h-10 w-full border px-3 text-sm text-zinc-950 outline-none transition focus:border-teal-600 ${
-                            sectionNameIsMissing
-                              ? "border-red-400"
-                              : "border-zinc-300"
-                          }`}
-                          onChange={(event) =>
-                            updateSectionName(
-                              uploadedFile.id,
-                              event.target.value,
-                            )
-                          }
-                        />
-                        {sectionNameIsMissing ? (
-                          <p className="mt-1 text-xs font-medium text-red-700">
-                            Section name is required before computation.
+          {uploadedFiles.length === 0 ? (
+            <div className="border border-zinc-200 bg-white px-4 py-8 text-center">
+              <h3 className="text-sm font-semibold text-zinc-950">
+                No spreadsheets uploaded yet
+              </h3>
+              <p className="mt-1 text-sm text-zinc-600">
+                Uploaded files will appear here as editable section entries.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto border border-zinc-200">
+              <table className="min-w-full divide-y divide-zinc-200 text-left text-sm">
+                <thead className="bg-zinc-50 text-xs font-semibold uppercase text-zinc-600">
+                  <tr>
+                    <th className="px-4 py-3">File</th>
+                    <th className="px-4 py-3">Section Name</th>
+                    <th className="min-w-96 px-4 py-3">Parsed Columns</th>
+                    <th className="w-24 px-4 py-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-200 bg-white">
+                  {uploadedFiles.map((uploadedFile) => {
+                    const sectionNameIsMissing =
+                      uploadedFile.sectionName.trim().length === 0;
+                    const parsedSectionState = parsedSections[uploadedFile.id];
+
+                    return (
+                      <tr key={uploadedFile.id}>
+                        <td className="max-w-xs px-4 py-3 align-top">
+                          <p className="break-words font-medium text-zinc-950">
+                            {uploadedFile.fileName}
                           </p>
-                        ) : null}
-                      </td>
-                      <td className="px-4 py-3 align-top text-zinc-600">
-                        <ParseSummary parseState={parsedSectionState} />
-                      </td>
-                      <td className="px-4 py-3 text-right align-top">
-                        <button
-                          type="button"
-                          className="h-9 border border-zinc-300 px-3 text-sm font-medium text-zinc-700 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700"
-                          onClick={() => removeFile(uploadedFile.id)}
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </section>
+                          <p className="mt-1 text-xs text-zinc-500">
+                            {formatFileSize(uploadedFile.file.size)}
+                          </p>
+                        </td>
+                        <td className="min-w-72 px-4 py-3 align-top">
+                          <label className="sr-only" htmlFor={uploadedFile.id}>
+                            Section name for {uploadedFile.fileName}
+                          </label>
+                          <input
+                            id={uploadedFile.id}
+                            type="text"
+                            value={uploadedFile.sectionName}
+                            className={`h-10 w-full border px-3 text-sm text-zinc-950 outline-none transition focus:border-teal-600 ${
+                              sectionNameIsMissing
+                                ? "border-red-400"
+                                : "border-zinc-300"
+                            }`}
+                            onChange={(event) =>
+                              updateSectionName(
+                                uploadedFile.id,
+                                event.target.value,
+                              )
+                            }
+                          />
+                          {sectionNameIsMissing ? (
+                            <p className="mt-1 text-xs font-medium text-red-700">
+                              Section name is required before computation.
+                            </p>
+                          ) : null}
+                        </td>
+                        <td className="px-4 py-3 align-top text-zinc-600">
+                          <ParseSummary parseState={parsedSectionState} />
+                        </td>
+                        <td className="px-4 py-3 text-right align-top">
+                          <button
+                            type="button"
+                            className="h-9 border border-zinc-300 px-3 text-sm font-medium text-zinc-700 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+                            onClick={() => removeFile(uploadedFile.id)}
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <CourseOutcomeMappingPanel
+        parsedSections={successfullyParsedSections}
+        mappingsBySectionId={mappingsBySectionId}
+        onMappingChange={updateCourseOutcomeMapping}
+      />
+    </>
   );
 }
 

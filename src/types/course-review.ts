@@ -55,6 +55,11 @@ export type SectionCourseOutcomeMappings = {
   mappings: CourseOutcomeMapping[];
 };
 
+export type SectionCourseOutcomeMappingState = Record<
+  CourseOutcomeCode,
+  string
+>;
+
 export type OutcomeResult = {
   coCode: CourseOutcomeCode;
   assessmentTask: string;
