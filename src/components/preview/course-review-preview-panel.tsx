@@ -3,28 +3,27 @@ import type {
   CourseReviewValidationError,
 } from "@/types/course-review";
 
-type ComputationResultsPanelProps = {
+type CourseReviewPreviewPanelProps = {
   errors: CourseReviewValidationError[];
   result: CourseReviewResult | null;
   onCompute: () => void;
 };
 
-export function ComputationResultsPanel({
+export function CourseReviewPreviewPanel({
   errors,
   result,
   onCompute,
-}: ComputationResultsPanelProps) {
+}: CourseReviewPreviewPanelProps) {
   return (
     <section className="w-full border border-zinc-200 bg-white shadow-sm">
       <div className="border-b border-zinc-200 px-4 py-4 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-zinc-950">
-              Compute Results
+              Course Review Preview
             </h2>
             <p className="text-sm text-zinc-600">
-              Calculate frequency, percentage, and remarks from the selected
-              mappings.
+              Generate the validation preview before creating the DOCX report.
             </p>
           </div>
           <button
@@ -32,7 +31,7 @@ export function ComputationResultsPanel({
             className="h-10 border border-zinc-900 bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800"
             onClick={onCompute}
           >
-            Compute Results
+            Generate Preview
           </button>
         </div>
       </div>
@@ -41,7 +40,9 @@ export function ComputationResultsPanel({
         {errors.length > 0 ? (
           <div className="border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
             {errors.map((error) => (
-              <p key={`${error.sectionId ?? "course"}-${error.coCode ?? "all"}-${error.message}`}>
+              <p
+                key={`${error.sectionId ?? "course"}-${error.coCode ?? "all"}-${error.message}`}
+              >
                 {error.message}
               </p>
             ))}
@@ -49,7 +50,7 @@ export function ComputationResultsPanel({
         ) : null}
 
         {result ? (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {result.sections.map((section) => (
               <div key={section.id} className="border border-zinc-200">
                 <div className="border-b border-zinc-200 bg-zinc-50 px-4 py-3">
@@ -64,11 +65,16 @@ export function ComputationResultsPanel({
                   <table className="min-w-full divide-y divide-zinc-200 text-left text-sm">
                     <thead className="bg-white text-xs font-semibold uppercase text-zinc-600">
                       <tr>
-                        <th className="px-4 py-3">CO</th>
-                        <th className="px-4 py-3">Assessment</th>
+                        <th className="px-4 py-3">Course Outcome</th>
+                        <th className="min-w-64 px-4 py-3">
+                          Assessment Task
+                        </th>
+                        <th className="px-4 py-3">Min. Satisfactory %</th>
+                        <th className="px-4 py-3">Target Passed %</th>
                         <th className="px-4 py-3">Frequency</th>
                         <th className="px-4 py-3">Percentage</th>
                         <th className="px-4 py-3">Remarks</th>
+                        <th className="px-4 py-3">Recommendation</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-200">
@@ -81,13 +87,25 @@ export function ComputationResultsPanel({
                             {outcome.assessmentTask}
                           </td>
                           <td className="whitespace-nowrap px-4 py-3 text-zinc-700">
+                            {formatPercent(outcome.minSatisfactoryPercent)}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-zinc-700">
+                            {formatPercent(outcome.targetPassedPercent)}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-zinc-700">
                             {outcome.frequencyPassed}
                           </td>
                           <td className="whitespace-nowrap px-4 py-3 text-zinc-700">
-                            {outcome.percentagePassed.toFixed(2)}%
+                            {formatPercent(outcome.percentagePassed, 2)}
                           </td>
                           <td className="whitespace-nowrap px-4 py-3 font-semibold text-zinc-950">
                             {outcome.remarks}
+                          </td>
+                          <td
+                            aria-label={`${outcome.coCode} recommendation intentionally blank`}
+                            className="min-w-36 px-4 py-3 text-zinc-700"
+                          >
+                            {outcome.recommendation}
                           </td>
                         </tr>
                       ))}
@@ -99,10 +117,14 @@ export function ComputationResultsPanel({
           </div>
         ) : (
           <div className="border border-zinc-200 bg-zinc-50 px-4 py-6 text-center text-sm text-zinc-600">
-            Computed results will appear here after all mappings are selected.
+            Preview will appear here after all mappings are selected.
           </div>
         )}
       </div>
     </section>
   );
+}
+
+function formatPercent(value: number, fractionDigits = 0) {
+  return `${value.toFixed(fractionDigits)}%`;
 }

@@ -11,7 +11,7 @@ import type {
   UploadedSpreadsheetFile,
 } from "@/types/course-review";
 import { CourseOutcomeMappingPanel } from "@/components/mapping/course-outcome-mapping-panel";
-import { ComputationResultsPanel } from "@/components/preview/computation-results-panel";
+import { CourseReviewPreviewPanel } from "@/components/preview/course-review-preview-panel";
 import {
   computeCourseReviewResult,
   validateCourseReviewComputation,
@@ -487,7 +487,7 @@ export function SpreadsheetUploadWorkspace() {
       />
 
       {successfullyParsedSections.length > 0 ? (
-        <ComputationResultsPanel
+        <CourseReviewPreviewPanel
           errors={computationErrors}
           result={courseReviewResult}
           onCompute={computeResults}
