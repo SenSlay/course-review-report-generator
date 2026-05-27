@@ -64,6 +64,9 @@ describe("course review DOCX generation", () => {
     expect(documentXml).toContain("Activity 1");
     expect(documentXml).toContain("66.67%");
     expect(documentXml).toContain("PASSED");
+    expect(getDocumentText(documentXml)).toMatch(/COURSE\s+REVIEW\s+\(CS\)/);
+    expect(getDocumentText(documentXml)).toContain("Change Syllabus");
+    expect(getDocumentText(documentXml)).not.toContain("CSS130 BM2");
     expect(documentXml).not.toContain("{#sections}");
     expect(documentXml).not.toContain("{#outcomes}");
   });
@@ -127,4 +130,8 @@ function createCourseReviewResult(): CourseReviewResult {
       },
     ],
   };
+}
+
+function getDocumentText(documentXml = "") {
+  return documentXml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
 }
