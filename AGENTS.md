@@ -32,6 +32,7 @@ Do not use LLM APIs for computation, report generation, recommendations, or colu
 - Do not add reusable CO mappings for MVP.
 - Do not add global mapping across all sections for MVP.
 - Do not auto-fill recommendations.
+- Treat sample grade files as sensitive unless they are explicitly anonymized.
 - Prioritize correctness over UI polish.
 - Separate spreadsheet parsing, computation, mapping, preview, and DOCX generation logic.
 - Keep modules small and readable.

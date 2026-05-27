@@ -10,6 +10,19 @@
 6. Target percentage of students passed is 70%.
 7. Recommendations are not auto-filled.
 8. The generated report should include one course outcome table per section.
+9. Grade Center `.xls` exports may be UTF-16 tab-delimited text files.
+10. `CO1 Grade`, `CO2 Grade`, and `CO3 Grade` columns mark Course Outcome assessment groups when present.
+
+## Spreadsheet Export Format
+
+The parser must support normal spreadsheet files and Grade Center-style exports that use `.xls` filenames but contain UTF-16 tab-delimited text.
+
+For Grade Center exports:
+
+- The first row is expected to contain headers.
+- Student metadata columns may include Last Name, First Name, Username, Student ID, Last Access, and Availability.
+- Graded columns usually include total-point metadata in the header, such as `[Total Pts: 100 Score]`.
+- Grade Center column IDs may appear after a pipe character, such as `|2825849`.
 
 ## Course Outcome Mapping
 
@@ -34,6 +47,19 @@ For MVP, do not implement:
 - Same mapping for all sections
 - Reusable saved mappings
 - Auto-mapping using AI
+
+## Course Outcome Boundary Columns
+
+When present, `CO1 Grade`, `CO2 Grade`, and `CO3 Grade` columns act as boundary markers for grouping assessment options.
+
+Default grouping rule:
+
+- Assessment columns before `CO1 Grade` belong to the CO1 group.
+- Assessment columns after `CO1 Grade` and before `CO2 Grade` belong to the CO2 group.
+- Assessment columns after `CO2 Grade` and before `CO3 Grade` belong to the CO3 group.
+- Assessment columns after `CO3 Grade` should not be assigned to a CO group unless a future rule explicitly supports it.
+
+These groups are only UI guidance. The user must still manually select the assessment/activity column for each Course Outcome.
 
 ## Student Counting
 

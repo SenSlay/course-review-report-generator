@@ -82,13 +82,14 @@ Expected result:
 
 Input:
 
-- Uploaded filename is CSS188-3_FOPM01_2T3031_fullgc.xls
-- User edits section name to CSS188-3 FOPM01
+- Uploaded filename is gc_CSS188-3_FOPM01_2T3031_fullgc_2030-05-18-09-57-51.xls
+- System infers section name as FOPM01
+- User may edit section name if needed
 
 Expected result:
 
-- Preview uses edited section name
-- Generated DOCX uses edited section name
+- Preview uses the confirmed section name
+- Generated DOCX uses the confirmed section name
 
 ## Test Case 8 - DOCX Export
 
@@ -129,3 +130,58 @@ Expected result:
 
 - App shows a validation message
 - App prevents computation
+
+## Test Case 11 - Grade Center Text Export
+
+Input:
+
+- Uploaded file has `.xls` extension
+- File content is UTF-16 tab-delimited Grade Center export
+
+Expected result:
+
+- App parses the file successfully
+- Header row is detected
+- Student rows are extracted
+- Assessment columns are extracted
+- App does not crash because the file is not a binary Excel workbook
+
+## Test Case 12 - CO Boundary Detection
+
+Input:
+
+- Spreadsheet includes `CO1 Grade`, `CO2 Grade`, and `CO3 Grade` columns
+- Assessment columns appear before and between those CO grade columns
+
+Expected result:
+
+- Columns before `CO1 Grade` are grouped under CO1
+- Columns after `CO1 Grade` and before `CO2 Grade` are grouped under CO2
+- Columns after `CO2 Grade` and before `CO3 Grade` are grouped under CO3
+- CO boundary grouping does not automatically select a mapping
+
+## Test Case 13 - Grouped Mapping Options
+
+Input:
+
+- User opens mapping UI after parsing a spreadsheet with CO boundary columns
+
+Expected result:
+
+- CO1 mapping dropdown shows CO1-group assessment options
+- CO2 mapping dropdown shows CO2-group assessment options
+- CO3 mapping dropdown shows CO3-group assessment options
+- User can still manually choose the correct assessment column
+
+## Test Case 14 - DOCX Template Compatibility
+
+Input:
+
+- Valid computed course review result
+- App-ready DOCX template with placeholders
+
+Expected result:
+
+- Template renders without placeholder errors
+- Repeated section data is generated correctly
+- Recommendation column remains blank

@@ -62,7 +62,7 @@ CSS188-3_FOPM01_2T3031_fullgc.xls
 
 Possible detected section name:
 
-CSS188-3 FOPM01
+FOPM01
 
 ### 3. Spreadsheet Parsing
 
@@ -75,6 +75,8 @@ The system should parse uploaded spreadsheets and extract:
 - Column labels
 
 The parser should be designed to handle spreadsheet exports where files may use `.xls` but contain tabular or exported data.
+
+Grade Center exports may use an `.xls` extension while the actual file content is UTF-16 tab-delimited text. The parser must support this export shape.
 
 ### 4. Assessment Column Detection
 
@@ -92,6 +94,10 @@ Assessment columns may include:
 - Other graded tasks
 
 The system should not automatically decide which assessment belongs to a Course Outcome.
+
+If the spreadsheet includes `CO1 Grade`, `CO2 Grade`, or `CO3 Grade` columns, those columns should be treated as Course Outcome boundary markers. Assessment columns before `CO1 Grade` belong to the CO1 group, assessment columns between `CO1 Grade` and `CO2 Grade` belong to the CO2 group, and assessment columns between `CO2 Grade` and `CO3 Grade` belong to the CO3 group.
+
+Boundary detection may be used to group assessment options in the UI, but it must not auto-select a mapping.
 
 ### 5. Per-Section Course Outcome Mapping
 
@@ -169,6 +175,17 @@ The report should fill:
 - Remarks
 
 The Recommendation column should remain blank.
+
+The official DOCX file may need an app-ready placeholder copy for Docxtemplater. If preserving the official template through placeholders becomes impractical, the app may generate the required result tables programmatically while keeping the same data and leaving recommendations blank.
+
+## Sample Files
+
+Local sample files may be stored under:
+
+- `samples/grades/`
+- `samples/templates/`
+
+Sample grade files should preferably be anonymized. These files are for local development, parser validation, and template validation.
 
 ## Out of Scope for MVP
 

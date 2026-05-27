@@ -59,12 +59,15 @@ Requirements:
 - Allow file removal before computation.
 - Infer section name from filename.
 - Allow user to manually edit section name.
+- Grade Center filenames such as `gc_CSS188-3_FOPM01_2T3031_fullgc_...xls` should infer `FOPM01` when possible.
 
 Do not implement DOCX generation yet.
 
 ## Phase 4 - Spreadsheet Parsing
 
 Implement spreadsheet parsing using SheetJS.
+
+Support Grade Center exports where `.xls` files are actually UTF-16 tab-delimited text.
 
 For each uploaded file:
 
@@ -73,6 +76,8 @@ For each uploaded file:
 - Detect the header row.
 - Extract columns.
 - Mark possible assessment columns.
+- Detect `CO1 Grade`, `CO2 Grade`, and `CO3 Grade` boundary columns when present.
+- Group possible assessment columns by CO boundary when possible.
 - Extract student rows.
 - Store parsed data as a ParsedSection.
 
@@ -96,12 +101,15 @@ For each section, the user should select assessment columns for:
 
 The UI should show the detected assessment columns as dropdown options.
 
+If CO boundary groups are available, show or organize options by the relevant CO group.
+
 For MVP:
 
 - Mapping is done per section.
 - Do not add same mapping for all sections.
 - Do not add reusable mappings.
 - Do not use AI to guess mappings.
+- Do not auto-select mappings from CO boundary groups.
 
 ## Phase 6 - Computation Engine
 
@@ -164,6 +172,8 @@ Use:
 
 Use a placeholder-based DOCX template.
 
+Create or maintain an app-ready placeholder copy of the official template if the provided template does not already contain Docxtemplater placeholders.
+
 The template should support repeated sections.
 
 The generated report should fill:
@@ -178,6 +188,8 @@ The generated report should fill:
 - Remarks
 
 The recommendation field must stay blank.
+
+If placeholder-based generation cannot preserve the official table structure reliably, generate the result tables programmatically while preserving the same fields and blank recommendations.
 
 Keep DOCX logic in:
 
@@ -210,6 +222,10 @@ Test with:
 
 - One spreadsheet
 - Multiple spreadsheets
+- Grade Center `.xls` export that is UTF-16 tab-delimited text
+- Section name detection from Grade Center filenames
+- CO boundary detection using `CO1 Grade`, `CO2 Grade`, and `CO3 Grade`
+- Grouped assessment options without auto-selection
 - Passed CO result
 - Failed CO result
 - Blank scores
@@ -217,6 +233,7 @@ Test with:
 - Wrong file type
 - Edited section name
 - DOCX generation
+- Placeholder-ready DOCX template compatibility
 
 After testing:
 
