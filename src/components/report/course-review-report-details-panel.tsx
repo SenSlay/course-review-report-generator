@@ -35,6 +35,11 @@ const fields: {
     label: "Quarter",
     placeholder: "3Q",
   },
+  {
+    key: "dateOfReview",
+    label: "Date of Review",
+    placeholder: "May 27, 2026",
+  },
 ];
 
 export function CourseReviewReportDetailsPanel({
@@ -50,7 +55,7 @@ export function CourseReviewReportDetailsPanel({
               Report Details
             </h2>
             <p className="text-sm text-zinc-600">
-              Course code can be edited. Date of review is added on download.
+              Course code is inferred when possible. Header fields are editable.
             </p>
           </div>
           <div className="text-sm font-medium text-zinc-700">
@@ -80,21 +85,6 @@ export function CourseReviewReportDetailsPanel({
             />
           </div>
         ))}
-        <div className="space-y-2">
-          <label
-            htmlFor="report-dateOfReview"
-            className="block text-sm font-semibold text-zinc-950"
-          >
-            Date of Review
-          </label>
-          <input
-            id="report-dateOfReview"
-            type="text"
-            value="Added on download"
-            readOnly
-            className="h-10 w-full border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-600 outline-none"
-          />
-        </div>
       </div>
     </section>
   );

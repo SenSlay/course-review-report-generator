@@ -7,7 +7,6 @@ import type {
 } from "@/types/course-review";
 import {
   createCourseReviewReportFileName,
-  formatDateOfReview,
   generateCourseReviewDocx,
 } from "@/lib/docx/course-review-docx";
 import { downloadBlob } from "@/lib/docx/download";
@@ -40,7 +39,6 @@ export function CourseReviewReportDownloadPanel({
       const resultWithReportDetails = {
         ...result,
         ...reportDetails,
-        dateOfReview: formatDateOfReview(new Date()),
       };
       const reportBlob = await generateCourseReviewDocx(
         resultWithReportDetails,

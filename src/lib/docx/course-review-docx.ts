@@ -63,7 +63,14 @@ export function renderCourseReviewDocxBytes(
 
     document.render(prepareCourseReviewDocxTemplateData(result));
 
-    return document.getZip().generate({
+    const renderedZip = document.getZip();
+    const documentXml = renderedZip.file("word/document.xml")?.asText();
+
+    if (documentXml) {
+      renderedZip.file("word/document.xml", colorRemarkRuns(documentXml));
+    }
+
+    return renderedZip.generate({
       type: "uint8array",
       compression: "DEFLATE",
       mimeType: DOCX_MIME_TYPE,
@@ -87,12 +94,12 @@ export function prepareCourseReviewDocxTemplateData(
       outcomes: section.outcomes.map((outcome) => ({
         coCode: outcome.coCode,
         assessmentTask: outcome.assessmentTask,
-        minSatisfactoryPercent: formatWholePercent(
+        minSatisfactoryPercent: formatWholeNumber(
           outcome.minSatisfactoryPercent,
         ),
-        targetPassedPercent: formatWholePercent(outcome.targetPassedPercent),
+        targetPassedPercent: formatWholeNumber(outcome.targetPassedPercent),
         frequencyPassed: String(outcome.frequencyPassed),
-        percentagePassed: formatPercent(outcome.percentagePassed, 2),
+        percentagePassed: formatNumber(outcome.percentagePassed, 2),
         remarks: outcome.remarks,
         recommendation: "",
       })),
@@ -132,12 +139,12 @@ async function fetchCourseReviewTemplate(templateUrl: string) {
   return response.arrayBuffer();
 }
 
-function formatWholePercent(value: number) {
-  return formatPercent(value, 0);
+function formatWholeNumber(value: number) {
+  return formatNumber(value, 0);
 }
 
-function formatPercent(value: number, fractionDigits: number) {
-  return `${value.toFixed(fractionDigits)}%`;
+function formatNumber(value: number, fractionDigits: number) {
+  return value.toFixed(fractionDigits);
 }
 
 function slugifyFileNamePart(value: string) {
@@ -153,6 +160,30 @@ function copyBytesToArrayBuffer(bytes: Uint8Array) {
   new Uint8Array(arrayBuffer).set(bytes);
 
   return arrayBuffer;
+}
+
+function colorRemarkRuns(documentXml: string) {
+  return documentXml.replace(
+    /<w:r\b[^>]*>(?:(?!<\/w:r>)[\s\S])*?<w:t\b[^>]*>(PASSED|FAILED)<\/w:t>(?:(?!<\/w:r>)[\s\S])*?<\/w:r>/g,
+    (runXml: string, remark: string) =>
+      setRunColor(runXml, remark === "PASSED" ? "001F5F" : "FF0000"),
+  );
+}
+
+function setRunColor(runXml: string, color: string) {
+  const colorTag = `<w:color w:val="${color}"/>`;
+
+  if (/<w:rPr>[\s\S]*?<\/w:rPr>/.test(runXml)) {
+    return runXml.replace(/<w:rPr>([\s\S]*?)<\/w:rPr>/, (_match, rPr) => {
+      const nextRunProperties = /<w:color\b[^>]*\/>/.test(rPr)
+        ? rPr.replace(/<w:color\b[^>]*\/>/, colorTag)
+        : `${rPr}${colorTag}`;
+
+      return `<w:rPr>${nextRunProperties}</w:rPr>`;
+    });
+  }
+
+  return runXml.replace(/(<w:r\b[^>]*>)/, `$1<w:rPr>${colorTag}</w:rPr>`);
 }
 
 function getDocxGenerationErrorMessage(error: unknown) {

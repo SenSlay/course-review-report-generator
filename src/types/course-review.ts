@@ -90,6 +90,7 @@ export type CourseReviewResult = {
 
 export type CourseReviewReportDetails = {
   courseCode: string;
+  dateOfReview: string;
   courseTitle: string;
   academicYear: string;
   quarter: string;

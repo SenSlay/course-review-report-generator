@@ -19,6 +19,7 @@ import {
   computeCourseReviewResult,
   validateCourseReviewComputation,
 } from "@/lib/course-review/computation";
+import { formatDateOfReview } from "@/lib/docx/course-review-docx";
 import {
   COURSE_OUTCOME_CODES,
   createEmptySectionMapping,
@@ -76,10 +77,18 @@ type ParsedSectionState = {
 
 const EMPTY_REPORT_DETAILS: CourseReviewReportDetails = {
   courseCode: "",
+  dateOfReview: "",
   courseTitle: "",
   academicYear: "",
   quarter: "",
 };
+
+function createInitialReportDetails(): CourseReviewReportDetails {
+  return {
+    ...EMPTY_REPORT_DETAILS,
+    dateOfReview: formatDateOfReview(new Date()),
+  };
+}
 
 export function SpreadsheetUploadWorkspace() {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -100,7 +109,7 @@ export function SpreadsheetUploadWorkspace() {
     CourseReviewValidationError[]
   >([]);
   const [reportDetails, setReportDetails] = useState<CourseReviewReportDetails>(
-    EMPTY_REPORT_DETAILS,
+    createInitialReportDetails,
   );
   const [courseCodeWasEdited, setCourseCodeWasEdited] = useState(false);
 
