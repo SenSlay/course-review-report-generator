@@ -188,13 +188,11 @@ function createRows(
   headerRowIndex: number,
 ): SpreadsheetRow[] {
   return studentRows.map((row, rowIndex) => {
-    const cells = columns.reduce<Record<string, SpreadsheetCellValue>>(
-      (currentCells, column) => ({
-        ...currentCells,
-        [column.key]: row[column.index] ?? null,
-      }),
-      {},
-    );
+    const cells: Record<string, SpreadsheetCellValue> = {};
+
+    columns.forEach((column) => {
+      cells[column.key] = row[column.index] ?? null;
+    });
 
     return {
       id: `row_${headerRowIndex + rowIndex + 1}`,

@@ -93,15 +93,14 @@ export function computeOutcomeResult({
   minSatisfactoryPercent?: number;
   targetPassedPercent?: number;
 }): OutcomeResult {
-  const validRows = rows.filter((row) => row.isValidStudent);
   const frequencyPassed = countPassedStudents(
-    validRows,
+    rows,
     column,
     minSatisfactoryPercent,
   );
   const percentagePassed = computePercentagePassed(
     frequencyPassed,
-    validRows.length,
+    rows.length,
   );
 
   return {
@@ -120,6 +119,7 @@ export function computeSectionResult(
   parsedSection: ParsedSection,
   mapping: SectionCourseOutcomeMappingState,
 ): SectionResult {
+  const validRows = parsedSection.rows.filter((row) => row.isValidStudent);
   const outcomes = COURSE_OUTCOME_CODES.map((coCode) => {
     const column = parsedSection.assessmentColumns.find(
       (assessmentColumn) => assessmentColumn.key === mapping[coCode],
@@ -132,7 +132,7 @@ export function computeSectionResult(
     return computeOutcomeResult({
       coCode,
       column,
-      rows: parsedSection.rows,
+      rows: validRows,
     });
   });
 
@@ -140,8 +140,7 @@ export function computeSectionResult(
     id: parsedSection.id,
     sectionName: parsedSection.sectionName,
     fileName: parsedSection.fileName,
-    totalStudents: parsedSection.rows.filter((row) => row.isValidStudent)
-      .length,
+    totalStudents: validRows.length,
     outcomes,
   };
 }
