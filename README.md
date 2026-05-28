@@ -2,6 +2,8 @@
 
 A browser-local tool for preparing course review report outcome tables from Grade Center spreadsheet exports.
 
+Live app: https://course-review-report-generator.vercel.app/
+
 ## What It Does
 
 - Upload one `.xls` or `.xlsx` grade spreadsheet per section.
