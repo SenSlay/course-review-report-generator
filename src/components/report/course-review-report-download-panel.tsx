@@ -22,6 +22,7 @@ export function CourseReviewReportDownloadPanel({
 }: CourseReviewReportDownloadPanelProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   if (!result) {
     return null;
@@ -34,6 +35,7 @@ export function CourseReviewReportDownloadPanel({
 
     setIsGenerating(true);
     setErrorMessage("");
+    setSuccessMessage("");
 
     try {
       const resultWithReportDetails = {
@@ -47,6 +49,7 @@ export function CourseReviewReportDownloadPanel({
         reportBlob,
         createCourseReviewReportFileName(resultWithReportDetails),
       );
+      setSuccessMessage("DOCX report generated.");
     } catch (error) {
       setErrorMessage(
         error instanceof Error
@@ -81,11 +84,18 @@ export function CourseReviewReportDownloadPanel({
         </div>
       </div>
 
-      {errorMessage.length > 0 ? (
+      {errorMessage.length > 0 || successMessage.length > 0 ? (
         <div className="p-4 sm:p-6">
-          <div className="border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
-            {errorMessage}
-          </div>
+          {errorMessage.length > 0 ? (
+            <div className="border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
+              {errorMessage}
+            </div>
+          ) : null}
+          {successMessage.length > 0 ? (
+            <div className="border border-[#D4AF37] bg-[#FFF8E1] px-4 py-3 text-sm text-[#7A5B00]">
+              {successMessage}
+            </div>
+          ) : null}
         </div>
       ) : null}
     </section>

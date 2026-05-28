@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, DragEvent, useRef, useState } from "react";
+import { ChangeEvent, DragEvent, ReactNode, useRef, useState } from "react";
 import type {
   CourseOutcomeCode,
   CourseReviewReportDetails,
@@ -397,9 +397,28 @@ export function SpreadsheetUploadWorkspace() {
     .filter((parsedSection): parsedSection is ParsedSection =>
       Boolean(parsedSection),
     );
+  const allMappingsSelected =
+    successfullyParsedSections.length > 0 &&
+    successfullyParsedSections.every((parsedSection) =>
+      COURSE_OUTCOME_CODES.every(
+        (coCode) =>
+          (mappingsBySectionId[parsedSection.id]?.[coCode] ?? "").length > 0,
+      ),
+    );
 
   return (
     <>
+      <WorkflowProgress
+        uploadedCount={uploadedFiles.length}
+        parsedCount={successfullyParsedSections.length}
+        allMappingsSelected={allMappingsSelected}
+        hasReportDetails={successfullyParsedSections.length > 0}
+        reportDetailsAreFilled={Object.values(reportDetails).every(
+          (value) => value.trim().length > 0,
+        )}
+        hasPreview={Boolean(courseReviewResult)}
+      />
+
       <section className="w-full border border-zinc-200 bg-white shadow-sm">
         <div className="border-b border-zinc-200 px-4 py-4 sm:px-6">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
@@ -411,7 +430,7 @@ export function SpreadsheetUploadWorkspace() {
                 Each Excel file will be treated as one course section.
               </p>
             </div>
-            <div className="text-sm font-medium text-zinc-700">
+            <div className="inline-flex w-fit items-center border border-zinc-200 bg-zinc-50 px-3 py-1 text-sm font-medium text-zinc-700">
               {uploadedFiles.length}{" "}
               {uploadedFiles.length === 1 ? "section" : "sections"}
             </div>
@@ -422,7 +441,7 @@ export function SpreadsheetUploadWorkspace() {
           <div
             className={`flex min-h-44 flex-col items-center justify-center border-2 border-dashed px-4 py-8 text-center transition-colors ${
               isDragging
-                ? "border-teal-500 bg-teal-50"
+                ? "border-[#A6192E] bg-red-50"
                 : "border-zinc-300 bg-zinc-50"
             }`}
             onDrop={handleDrop}
@@ -442,8 +461,7 @@ export function SpreadsheetUploadWorkspace() {
                 Drop Excel files here
               </p>
               <p className="text-sm text-zinc-600">
-                You can upload one file or several section files at the same
-                time.
+                Upload one Grade Center export per course section.
               </p>
               <button
                 type="button"
@@ -456,7 +474,7 @@ export function SpreadsheetUploadWorkspace() {
           </div>
 
           {uploadErrors.length > 0 ? (
-            <div className="border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <div className="space-y-1 border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
               {uploadErrors.map((error) => (
                 <p key={error.id}>{error.message}</p>
               ))}
@@ -464,7 +482,7 @@ export function SpreadsheetUploadWorkspace() {
           ) : null}
 
           {uploadedFiles.length === 0 ? (
-            <div className="border border-zinc-200 bg-white px-4 py-8 text-center">
+            <div className="border border-dashed border-zinc-300 bg-zinc-50 px-4 py-8 text-center">
               <h3 className="text-sm font-semibold text-zinc-950">
                 No spreadsheets uploaded yet
               </h3>
@@ -479,7 +497,7 @@ export function SpreadsheetUploadWorkspace() {
                   <tr>
                     <th className="px-4 py-3">File</th>
                     <th className="px-4 py-3">Section Name</th>
-                    <th className="min-w-96 px-4 py-3">Parsed Columns</th>
+                    <th className="min-w-64 px-4 py-3">Status</th>
                     <th className="w-24 px-4 py-3 text-right">Action</th>
                   </tr>
                 </thead>
@@ -490,8 +508,8 @@ export function SpreadsheetUploadWorkspace() {
                     const parsedSectionState = parsedSections[uploadedFile.id];
 
                     return (
-                      <tr key={uploadedFile.id}>
-                        <td className="max-w-xs px-4 py-3 align-top">
+                      <tr key={uploadedFile.id} className="align-top">
+                        <td className="max-w-xs px-4 py-4">
                           <p className="break-words font-medium text-zinc-950">
                             {uploadedFile.fileName}
                           </p>
@@ -499,7 +517,7 @@ export function SpreadsheetUploadWorkspace() {
                             {formatFileSize(uploadedFile.file.size)}
                           </p>
                         </td>
-                        <td className="min-w-72 px-4 py-3 align-top">
+                        <td className="min-w-72 px-4 py-4">
                           <label className="sr-only" htmlFor={uploadedFile.id}>
                             Section name for {uploadedFile.fileName}
                           </label>
@@ -507,7 +525,7 @@ export function SpreadsheetUploadWorkspace() {
                             id={uploadedFile.id}
                             type="text"
                             value={uploadedFile.sectionName}
-                            className={`h-10 w-full border px-3 text-sm text-zinc-950 outline-none transition focus:border-teal-600 ${
+                            className={`h-10 w-full border px-3 text-sm text-zinc-950 outline-none transition focus:border-[#A6192E] ${
                               sectionNameIsMissing
                                 ? "border-red-400"
                                 : "border-zinc-300"
@@ -525,10 +543,10 @@ export function SpreadsheetUploadWorkspace() {
                             </p>
                           ) : null}
                         </td>
-                        <td className="px-4 py-3 align-top text-zinc-600">
+                        <td className="px-4 py-4 text-zinc-600">
                           <ParseSummary parseState={parsedSectionState} />
                         </td>
-                        <td className="px-4 py-3 text-right align-top">
+                        <td className="px-4 py-4 text-right">
                           <button
                             type="button"
                             className="h-9 border border-zinc-300 px-3 text-sm font-medium text-zinc-700 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700"
@@ -582,18 +600,21 @@ function ParseSummary({
   parseState: ParsedSectionState | undefined;
 }) {
   if (!parseState || parseState.status === "idle") {
-    return <p className="text-sm text-zinc-500">Waiting to parse.</p>;
+    return <StatusBadge tone="neutral">Waiting to parse</StatusBadge>;
   }
 
   if (parseState.status === "parsing") {
-    return <p className="text-sm font-medium text-teal-700">Parsing...</p>;
+    return <StatusBadge tone="info">Parsing</StatusBadge>;
   }
 
   if (parseState.status === "failed") {
     return (
-      <p className="text-sm font-medium text-red-700">
-        {parseState.errorMessage ?? "The spreadsheet could not be parsed."}
-      </p>
+      <div className="space-y-2">
+        <StatusBadge tone="danger">Parse failed</StatusBadge>
+        <p className="max-w-xl text-sm font-medium text-red-700">
+          {parseState.errorMessage ?? "The spreadsheet could not be parsed."}
+        </p>
+      </div>
     );
   }
 
@@ -612,32 +633,134 @@ function ParseSummary({
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium text-teal-700">Parsed successfully</p>
+      <StatusBadge tone="success">Parsed successfully</StatusBadge>
       <p className="text-xs text-zinc-600">
         {validStudentCount} valid students •{" "}
-        {parsedSection.assessmentColumns.length} assessment columns •{" "}
+        {parsedSection.assessmentColumns.length} assessment options •{" "}
         {boundaryCodes.length > 0
           ? `${boundaryCodes} boundaries`
           : "No CO boundaries"}
       </p>
-      <div className="space-y-1">
-        {COURSE_OUTCOME_CODES.map((coCode) => {
-          const groupColumns = parsedSection.assessmentColumns.filter(
-            (column) => column.assessmentGroup === coCode,
-          );
-
-          if (groupColumns.length === 0) {
-            return null;
-          }
-
-          return (
-            <p key={coCode} className="text-xs text-zinc-700">
-              <span className="font-semibold">{coCode}:</span>{" "}
-              {groupColumns.map((column) => column.label).join(", ")}
-            </p>
-          );
-        })}
-      </div>
     </div>
+  );
+}
+
+function WorkflowProgress({
+  uploadedCount,
+  parsedCount,
+  allMappingsSelected,
+  hasReportDetails,
+  reportDetailsAreFilled,
+  hasPreview,
+}: {
+  uploadedCount: number;
+  parsedCount: number;
+  allMappingsSelected: boolean;
+  hasReportDetails: boolean;
+  reportDetailsAreFilled: boolean;
+  hasPreview: boolean;
+}) {
+  const steps = [
+    {
+      label: "Upload Grade Spreadsheets",
+      status: uploadedCount > 0 ? "complete" : "current",
+      detail:
+        uploadedCount > 0
+          ? `${parsedCount}/${uploadedCount} parsed`
+          : "Add section files",
+    },
+    {
+      label: "Map Course Outcomes",
+      status:
+        parsedCount === 0
+          ? "pending"
+          : allMappingsSelected
+            ? "complete"
+            : "current",
+      detail: allMappingsSelected ? "Ready" : "CO1 to CO3 required",
+    },
+    {
+      label: "Report Details",
+      status: !hasReportDetails
+        ? "pending"
+        : reportDetailsAreFilled
+          ? "complete"
+          : "current",
+      detail: reportDetailsAreFilled ? "Filled" : "Header fields",
+    },
+    {
+      label: "Preview Results",
+      status: hasPreview ? "complete" : allMappingsSelected ? "current" : "pending",
+      detail: hasPreview ? "Validated" : "Required before DOCX",
+    },
+    {
+      label: "Download DOCX",
+      status: hasPreview ? "current" : "pending",
+      detail: hasPreview ? "Available" : "After preview",
+    },
+  ] as const;
+
+  return (
+    <section className="sticky top-0 z-20 -mx-4 border-y border-zinc-200 bg-zinc-100/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      <div className="mx-auto flex w-full max-w-6xl gap-2 overflow-x-auto sm:grid sm:grid-cols-5">
+        {steps.map((step, index) => (
+          <div
+            key={step.label}
+            className={`min-w-56 border px-3 py-2 sm:min-w-0 ${
+              step.status === "current"
+                ? "border-[#A6192E] bg-white"
+                : step.status === "complete"
+                  ? "border-[#D4AF37] bg-[#FFF8E1]"
+                  : "border-zinc-200 bg-white"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <span
+                className={`flex h-6 w-6 shrink-0 items-center justify-center border text-xs font-semibold ${
+                  step.status === "complete"
+                    ? "border-[#A6192E] bg-[#A6192E] text-white"
+                    : step.status === "current"
+                      ? "border-zinc-950 bg-zinc-950 text-white"
+                      : "border-zinc-300 bg-zinc-50 text-zinc-500"
+                }`}
+              >
+                {index + 1}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-xs font-semibold text-zinc-950">
+                  {step.label}
+                </p>
+                <p className="truncate text-[11px] text-zinc-600">
+                  {step.detail}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function StatusBadge({
+  tone,
+  children,
+}: {
+  tone: "neutral" | "info" | "success" | "danger";
+  children: ReactNode;
+}) {
+  const toneClassName = {
+    neutral: "border-zinc-200 bg-zinc-50 text-zinc-600",
+    info: "border-[#D4AF37] bg-[#FFF8E1] text-[#7A5B00]",
+    success: "border-[#D4AF37] bg-[#FFF8E1] text-[#7A5B00]",
+    danger: "border-red-200 bg-red-50 text-red-700",
+  }[tone];
+
+  return (
+    <span
+      className={`inline-flex w-fit items-center border px-2.5 py-1 text-xs font-semibold ${toneClassName}`}
+    >
+      {children}
+    </span>
   );
 }

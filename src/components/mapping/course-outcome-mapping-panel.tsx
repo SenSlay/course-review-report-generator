@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type {
   CourseOutcomeCode,
   ParsedSection,
@@ -40,9 +41,6 @@ export function CourseOutcomeMappingPanel({
               Select one assessment column for each Course Outcome per section.
             </p>
           </div>
-          <div className="text-sm font-medium text-zinc-700">
-            Manual selection required
-          </div>
         </div>
       </div>
 
@@ -55,10 +53,10 @@ export function CourseOutcomeMappingPanel({
           return (
             <div
               key={parsedSection.id}
-              className="border border-zinc-200 bg-zinc-50"
+              className="border border-zinc-200 bg-zinc-50 shadow-sm"
             >
               <div className="border-b border-zinc-200 bg-white px-4 py-3">
-                <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <h3 className="font-semibold text-zinc-950">
                       {parsedSection.sectionName}
@@ -67,9 +65,19 @@ export function CourseOutcomeMappingPanel({
                       {parsedSection.fileName}
                     </p>
                   </div>
-                  <p className="text-xs font-medium text-zinc-600">
-                    {parsedSection.assessmentColumns.length} assessment options
-                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <StatusBadge tone="neutral">
+                      {parsedSection.assessmentColumns.length} assessment
+                      options
+                    </StatusBadge>
+                    <StatusBadge
+                      tone={missingMappings.length > 0 ? "danger" : "success"}
+                    >
+                      {missingMappings.length > 0
+                        ? `${missingMappings.length} mappings missing`
+                        : "All mappings selected"}
+                    </StatusBadge>
+                  </div>
                 </div>
               </div>
 
@@ -95,11 +103,11 @@ export function CourseOutcomeMappingPanel({
                 </div>
 
                 {missingMappings.length > 0 ? (
-                  <p className="text-xs font-medium text-red-700">
+                  <p className="border-l-4 border-red-500 bg-red-50 px-3 py-2 text-xs font-medium text-red-800">
                     Mapping required for {missingMappings.join(", ")}.
                   </p>
                 ) : (
-                  <p className="text-xs font-medium text-teal-700">
+                  <p className="border-l-4 border-[#D4AF37] bg-[#FFF8E1] px-3 py-2 text-xs font-medium text-[#7A5B00]">
                     All Course Outcomes have selected assessment columns.
                   </p>
                 )}
@@ -131,17 +139,24 @@ function CourseOutcomeSelect({
   const hasMissingMapping = value.length === 0;
 
   return (
-    <div className="space-y-2">
+    <div className="border border-zinc-200 bg-white p-3">
       <label
         htmlFor={inputId}
-        className="block text-sm font-semibold text-zinc-950"
+        className="mb-2 flex items-center justify-between gap-2 text-sm font-semibold text-zinc-950"
       >
-        {coCode}
+        <span>{coCode}</span>
+        {hasMissingMapping ? (
+          <span className="text-xs font-semibold text-red-700">Required</span>
+        ) : (
+          <span className="text-xs font-semibold text-[#7A5B00]">
+            Selected
+          </span>
+        )}
       </label>
       <select
         id={inputId}
         value={value}
-        className={`h-10 w-full border bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-teal-600 ${
+        className={`h-10 w-full border bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-[#A6192E] ${
           hasMissingMapping ? "border-red-400" : "border-zinc-300"
         }`}
         onChange={(event) => onChange(event.target.value)}
@@ -167,8 +182,32 @@ function CourseOutcomeSelect({
         ) : null}
       </select>
       {hasMissingMapping ? (
-        <p className="text-xs font-medium text-red-700">Mapping required.</p>
+        <p className="mt-2 text-xs font-medium text-red-700">
+          Select the assessment column used for {coCode}.
+        </p>
       ) : null}
     </div>
+  );
+}
+
+function StatusBadge({
+  tone,
+  children,
+}: {
+  tone: "neutral" | "success" | "danger";
+  children: ReactNode;
+}) {
+  const toneClassName = {
+    neutral: "border-zinc-200 bg-zinc-50 text-zinc-600",
+    success: "border-[#D4AF37] bg-[#FFF8E1] text-[#7A5B00]",
+    danger: "border-red-200 bg-red-50 text-red-700",
+  }[tone];
+
+  return (
+    <span
+      className={`inline-flex w-fit items-center border px-2.5 py-1 text-xs font-semibold ${toneClassName}`}
+    >
+      {children}
+    </span>
   );
 }

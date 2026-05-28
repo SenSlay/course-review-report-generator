@@ -31,14 +31,15 @@ export function CourseReviewPreviewPanel({
             className="h-10 border border-zinc-900 bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800"
             onClick={onCompute}
           >
-            Generate Preview
+            {result ? "Regenerate Preview" : "Generate Preview"}
           </button>
         </div>
       </div>
 
       <div className="space-y-4 p-4 sm:p-6">
         {errors.length > 0 ? (
-          <div className="border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
+          <div className="space-y-2 border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
+            <p className="font-semibold">Preview could not be generated.</p>
             {errors.map((error) => (
               <p
                 key={`${error.sectionId ?? "course"}-${error.coCode ?? "all"}-${error.message}`}
@@ -54,12 +55,19 @@ export function CourseReviewPreviewPanel({
             {result.sections.map((section) => (
               <div key={section.id} className="border border-zinc-200">
                 <div className="border-b border-zinc-200 bg-zinc-50 px-4 py-3">
-                  <h3 className="font-semibold text-zinc-950">
-                    {section.sectionName}
-                  </h3>
-                  <p className="text-xs text-zinc-600">
-                    {section.totalStudents} valid students
-                  </p>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="font-semibold text-zinc-950">
+                        {section.sectionName}
+                      </h3>
+                      <p className="text-xs text-zinc-600">
+                        {section.fileName}
+                      </p>
+                    </div>
+                    <span className="inline-flex w-fit items-center border border-zinc-200 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-700">
+                      {section.totalStudents} valid students
+                    </span>
+                  </div>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-zinc-200 text-left text-sm">
@@ -69,10 +77,14 @@ export function CourseReviewPreviewPanel({
                         <th className="min-w-64 px-4 py-3">
                           Assessment Task
                         </th>
-                        <th className="px-4 py-3">Min. Satisfactory %</th>
-                        <th className="px-4 py-3">Target Passed %</th>
-                        <th className="px-4 py-3">Frequency</th>
-                        <th className="px-4 py-3">Percentage</th>
+                        <th className="px-4 py-3 text-right">
+                          Min. Satisfactory %
+                        </th>
+                        <th className="px-4 py-3 text-right">
+                          Target Passed %
+                        </th>
+                        <th className="px-4 py-3 text-right">Frequency</th>
+                        <th className="px-4 py-3 text-right">Percentage</th>
                         <th className="px-4 py-3">Remarks</th>
                         <th className="px-4 py-3">Recommendation</th>
                       </tr>
@@ -86,20 +98,28 @@ export function CourseReviewPreviewPanel({
                           <td className="px-4 py-3 text-zinc-700">
                             {outcome.assessmentTask}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-zinc-700">
+                          <td className="whitespace-nowrap px-4 py-3 text-right text-zinc-700">
                             {formatPercent(outcome.minSatisfactoryPercent)}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-zinc-700">
+                          <td className="whitespace-nowrap px-4 py-3 text-right text-zinc-700">
                             {formatPercent(outcome.targetPassedPercent)}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-zinc-700">
+                          <td className="whitespace-nowrap px-4 py-3 text-right text-zinc-700">
                             {outcome.frequencyPassed}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-zinc-700">
+                          <td className="whitespace-nowrap px-4 py-3 text-right text-zinc-700">
                             {formatPercent(outcome.percentagePassed, 2)}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 font-semibold text-zinc-950">
-                            {outcome.remarks}
+                          <td className="whitespace-nowrap px-4 py-3">
+                            <span
+                              className={`inline-flex border px-2 py-1 text-xs font-semibold ${
+                                outcome.remarks === "PASSED"
+                                  ? "border-blue-200 bg-blue-50 text-blue-800"
+                                  : "border-red-200 bg-red-50 text-red-700"
+                              }`}
+                            >
+                              {outcome.remarks}
+                            </span>
                           </td>
                           <td
                             aria-label={`${outcome.coCode} recommendation intentionally blank`}
@@ -117,7 +137,8 @@ export function CourseReviewPreviewPanel({
           </div>
         ) : (
           <div className="border border-zinc-200 bg-zinc-50 px-4 py-6 text-center text-sm text-zinc-600">
-            Preview will appear here after all mappings are selected.
+            Preview will appear here after every section has CO1, CO2, and CO3
+            mappings.
           </div>
         )}
       </div>

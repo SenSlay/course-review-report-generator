@@ -14,6 +14,7 @@ const fields: {
   key: keyof CourseReviewReportDetails;
   label: string;
   placeholder: string;
+  gridClassName?: string;
 }[] = [
   {
     key: "courseCode",
@@ -24,6 +25,7 @@ const fields: {
     key: "courseTitle",
     label: "Course Title",
     placeholder: "Optional",
+    gridClassName: "sm:col-span-2 lg:col-span-2",
   },
   {
     key: "academicYear",
@@ -58,15 +60,15 @@ export function CourseReviewReportDetailsPanel({
               Course code is inferred when possible. Header fields are editable.
             </p>
           </div>
-          <div className="text-sm font-medium text-zinc-700">
+          <div className="inline-flex w-fit items-center border border-zinc-200 bg-zinc-50 px-3 py-1 text-sm font-medium text-zinc-700">
             Header fields
           </div>
         </div>
       </div>
 
-      <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-5">
+      <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-6">
         {fields.map((field) => (
-          <div key={field.key} className="space-y-2">
+          <div key={field.key} className={`space-y-2 ${field.gridClassName ?? ""}`}>
             <label
               htmlFor={`report-${field.key}`}
               className="block text-sm font-semibold text-zinc-950"
@@ -78,7 +80,7 @@ export function CourseReviewReportDetailsPanel({
               type="text"
               value={details[field.key]}
               placeholder={field.placeholder}
-              className="h-10 w-full border border-zinc-300 px-3 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-teal-600"
+              className="h-10 w-full border border-zinc-300 px-3 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-[#A6192E]"
               onChange={(event) =>
                 onDetailsChange(field.key, event.target.value)
               }

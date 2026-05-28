@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Course Review Report Generator
 
-## Getting Started
+A browser-local tool for preparing course review report outcome tables from Grade Center spreadsheet exports.
 
-First, run the development server:
+## What It Does
+
+- Upload one `.xls` or `.xlsx` grade spreadsheet per section.
+- Infer section names and course codes from Grade Center filenames when possible.
+- Let the user manually map CO1, CO2, and CO3 to assessment columns per section.
+- Compute frequency, percentage, and PASSED/FAILED remarks deterministically.
+- Show a preview before report generation.
+- Generate a filled DOCX report from the app-ready course review template.
+
+Student data stays in the browser. The app does not use LLM APIs, external computation services, authentication, or a database.
+
+## Local Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## MVP Workflow
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Upload Grade Center exports, using one spreadsheet for each section.
+2. Confirm or edit the detected section name for each uploaded file.
+3. Select one assessment column for CO1, CO2, and CO3 in every section.
+4. Fill or edit the report header details.
+5. Generate the preview and check the computed values.
+6. Download the DOCX report.
 
-## Learn More
+Recommendations are intentionally left blank in the preview and generated DOCX.
 
-To learn more about Next.js, take a look at the following resources:
+## Verification
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Run the automated checks before shipping changes:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm test
+npm run lint
+npm run build
+```
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Manual QA should include single-section upload, multiple-section upload, Grade Center UTF-16 `.xls` export parsing, missing mapping validation, edited section names, DOCX download, and opening the generated DOCX in Word or LibreOffice.
