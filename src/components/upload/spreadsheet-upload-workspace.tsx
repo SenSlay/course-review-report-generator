@@ -419,18 +419,23 @@ export function SpreadsheetUploadWorkspace() {
         hasPreview={Boolean(courseReviewResult)}
       />
 
-      <section className="w-full border border-zinc-200 bg-white shadow-sm">
+      <section className="w-full rounded-md border border-zinc-200 bg-white shadow-sm">
         <div className="border-b border-zinc-200 px-4 py-4 sm:px-6">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-zinc-950">
-                Upload Grade Spreadsheets
-              </h2>
-              <p className="text-sm text-zinc-600">
-                Each Excel file will be treated as one course section.
-              </p>
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-sm border border-[#A6192E] bg-[#A6192E] text-xs font-semibold text-white">
+                1
+              </span>
+              <div>
+                <h2 className="text-lg font-semibold text-zinc-950">
+                  Upload Grade Spreadsheets
+                </h2>
+                <p className="text-sm text-zinc-600">
+                  Each Excel file will be treated as one course section.
+                </p>
+              </div>
             </div>
-            <div className="inline-flex w-fit items-center border border-zinc-200 bg-zinc-50 px-3 py-1 text-sm font-medium text-zinc-700">
+            <div className="inline-flex w-fit items-center rounded-sm border border-zinc-200 bg-zinc-50 px-3 py-1 text-sm font-medium text-zinc-700">
               {uploadedFiles.length}{" "}
               {uploadedFiles.length === 1 ? "section" : "sections"}
             </div>
@@ -439,7 +444,7 @@ export function SpreadsheetUploadWorkspace() {
 
         <div className="space-y-5 p-4 sm:p-6">
           <div
-            className={`flex min-h-44 flex-col items-center justify-center border-2 border-dashed px-4 py-8 text-center transition-colors ${
+            className={`flex min-h-44 flex-col items-center justify-center rounded-md border-2 border-dashed px-4 py-8 text-center transition-colors ${
               isDragging
                 ? "border-[#A6192E] bg-red-50"
                 : "border-zinc-300 bg-zinc-50"
@@ -465,7 +470,7 @@ export function SpreadsheetUploadWorkspace() {
               </p>
               <button
                 type="button"
-                className="inline-flex h-10 items-center justify-center border border-zinc-900 bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800"
+                className="inline-flex h-10 cursor-pointer items-center justify-center rounded-sm border border-zinc-900 bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800"
                 onClick={() => fileInputRef.current?.click()}
               >
                 Choose files
@@ -474,7 +479,7 @@ export function SpreadsheetUploadWorkspace() {
           </div>
 
           {uploadErrors.length > 0 ? (
-            <div className="space-y-1 border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <div className="space-y-1 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
               {uploadErrors.map((error) => (
                 <p key={error.id}>{error.message}</p>
               ))}
@@ -482,7 +487,7 @@ export function SpreadsheetUploadWorkspace() {
           ) : null}
 
           {uploadedFiles.length === 0 ? (
-            <div className="border border-dashed border-zinc-300 bg-zinc-50 px-4 py-8 text-center">
+            <div className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-8 text-center">
               <h3 className="text-sm font-semibold text-zinc-950">
                 No spreadsheets uploaded yet
               </h3>
@@ -491,7 +496,7 @@ export function SpreadsheetUploadWorkspace() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto border border-zinc-200">
+            <div className="overflow-x-auto rounded-md border border-zinc-200">
               <table className="min-w-full divide-y divide-zinc-200 text-left text-sm">
                 <thead className="bg-zinc-50 text-xs font-semibold uppercase text-zinc-600">
                   <tr>
@@ -525,7 +530,7 @@ export function SpreadsheetUploadWorkspace() {
                             id={uploadedFile.id}
                             type="text"
                             value={uploadedFile.sectionName}
-                            className={`h-10 w-full border px-3 text-sm text-zinc-950 outline-none transition focus:border-[#A6192E] ${
+                            className={`h-10 w-full rounded-sm border px-3 text-sm text-zinc-950 outline-none transition focus:border-[#A6192E] ${
                               sectionNameIsMissing
                                 ? "border-red-400"
                                 : "border-zinc-300"
@@ -549,7 +554,7 @@ export function SpreadsheetUploadWorkspace() {
                         <td className="px-4 py-4 text-right">
                           <button
                             type="button"
-                            className="h-9 border border-zinc-300 px-3 text-sm font-medium text-zinc-700 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+                            className="h-9 cursor-pointer rounded-sm border border-zinc-300 px-3 text-sm font-medium text-zinc-700 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700"
                             onClick={() => removeFile(uploadedFile.id)}
                           >
                             Remove
@@ -706,7 +711,7 @@ function WorkflowProgress({
         {steps.map((step, index) => (
           <div
             key={step.label}
-            className={`min-w-56 border px-3 py-2 sm:min-w-0 ${
+            className={`min-w-56 rounded-md border px-3 py-2 sm:min-w-0 ${
               step.status === "current"
                 ? "border-[#A6192E] bg-white"
                 : step.status === "complete"
@@ -716,7 +721,7 @@ function WorkflowProgress({
           >
             <div className="flex items-center gap-2">
               <span
-                className={`flex h-6 w-6 shrink-0 items-center justify-center border text-xs font-semibold ${
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-sm border text-xs font-semibold ${
                   step.status === "complete"
                     ? "border-[#A6192E] bg-[#A6192E] text-white"
                     : step.status === "current"
@@ -758,7 +763,7 @@ function StatusBadge({
 
   return (
     <span
-      className={`inline-flex w-fit items-center border px-2.5 py-1 text-xs font-semibold ${toneClassName}`}
+      className={`inline-flex w-fit items-center rounded-sm border px-2.5 py-1 text-xs font-semibold ${toneClassName}`}
     >
       {children}
     </span>

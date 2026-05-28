@@ -49,18 +49,24 @@ export function CourseReviewReportDetailsPanel({
   onDetailsChange,
 }: CourseReviewReportDetailsPanelProps) {
   return (
-    <section className="w-full border border-zinc-200 bg-white shadow-sm">
+    <section className="w-full rounded-md border border-zinc-200 bg-white shadow-sm">
       <div className="border-b border-zinc-200 px-4 py-4 sm:px-6">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-zinc-950">
-              Report Details
-            </h2>
-            <p className="text-sm text-zinc-600">
-              Course code is inferred when possible. Header fields are editable.
-            </p>
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-sm border border-[#A6192E] bg-[#A6192E] text-xs font-semibold text-white">
+              3
+            </span>
+            <div>
+              <h2 className="text-lg font-semibold text-zinc-950">
+                Report Details
+              </h2>
+              <p className="text-sm text-zinc-600">
+                Course code is inferred when possible. Header fields are
+                editable.
+              </p>
+            </div>
           </div>
-          <div className="inline-flex w-fit items-center border border-zinc-200 bg-zinc-50 px-3 py-1 text-sm font-medium text-zinc-700">
+          <div className="inline-flex w-fit items-center rounded-sm border border-zinc-200 bg-zinc-50 px-3 py-1 text-sm font-medium text-zinc-700">
             Header fields
           </div>
         </div>
@@ -80,7 +86,7 @@ export function CourseReviewReportDetailsPanel({
               type="text"
               value={details[field.key]}
               placeholder={field.placeholder}
-              className="h-10 w-full border border-zinc-300 px-3 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-[#A6192E]"
+              className="h-10 w-full rounded-sm border border-zinc-300 px-3 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-[#A6192E]"
               onChange={(event) =>
                 onDetailsChange(field.key, event.target.value)
               }

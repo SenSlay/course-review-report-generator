@@ -30,16 +30,22 @@ export function CourseOutcomeMappingPanel({
   }
 
   return (
-    <section className="w-full border border-zinc-200 bg-white shadow-sm">
+    <section className="w-full rounded-md border border-zinc-200 bg-white shadow-sm">
       <div className="border-b border-zinc-200 px-4 py-4 sm:px-6">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-zinc-950">
-              Map Course Outcomes
-            </h2>
-            <p className="text-sm text-zinc-600">
-              Select one assessment column for each Course Outcome per section.
-            </p>
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-sm border border-[#A6192E] bg-[#A6192E] text-xs font-semibold text-white">
+              2
+            </span>
+            <div>
+              <h2 className="text-lg font-semibold text-zinc-950">
+                Map Course Outcomes
+              </h2>
+              <p className="text-sm text-zinc-600">
+                Select one assessment column for each Course Outcome per
+                section.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -53,7 +59,7 @@ export function CourseOutcomeMappingPanel({
           return (
             <div
               key={parsedSection.id}
-              className="border border-zinc-200 bg-zinc-50 shadow-sm"
+              className="rounded-md border border-zinc-200 bg-zinc-50 shadow-sm"
             >
               <div className="border-b border-zinc-200 bg-white px-4 py-3">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -83,7 +89,7 @@ export function CourseOutcomeMappingPanel({
 
               <div className="space-y-4 p-4">
                 {!hasAssessmentColumns ? (
-                  <div className="border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
                     No assessment columns were detected for this section.
                   </div>
                 ) : null}
@@ -103,11 +109,11 @@ export function CourseOutcomeMappingPanel({
                 </div>
 
                 {missingMappings.length > 0 ? (
-                  <p className="border-l-4 border-red-500 bg-red-50 px-3 py-2 text-xs font-medium text-red-800">
+                  <p className="rounded-sm border-l-4 border-red-500 bg-red-50 px-3 py-2 text-xs font-medium text-red-800">
                     Mapping required for {missingMappings.join(", ")}.
                   </p>
                 ) : (
-                  <p className="border-l-4 border-[#D4AF37] bg-[#FFF8E1] px-3 py-2 text-xs font-medium text-[#7A5B00]">
+                  <p className="rounded-sm border-l-4 border-[#D4AF37] bg-[#FFF8E1] px-3 py-2 text-xs font-medium text-[#7A5B00]">
                     All Course Outcomes have selected assessment columns.
                   </p>
                 )}
@@ -139,7 +145,7 @@ function CourseOutcomeSelect({
   const hasMissingMapping = value.length === 0;
 
   return (
-    <div className="border border-zinc-200 bg-white p-3">
+    <div className="rounded-md border border-zinc-200 bg-white p-3">
       <label
         htmlFor={inputId}
         className="mb-2 flex items-center justify-between gap-2 text-sm font-semibold text-zinc-950"
@@ -156,7 +162,7 @@ function CourseOutcomeSelect({
       <select
         id={inputId}
         value={value}
-        className={`h-10 w-full border bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-[#A6192E] ${
+        className={`h-10 w-full rounded-sm border bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-[#A6192E] ${
           hasMissingMapping ? "border-red-400" : "border-zinc-300"
         }`}
         onChange={(event) => onChange(event.target.value)}
@@ -205,7 +211,7 @@ function StatusBadge({
 
   return (
     <span
-      className={`inline-flex w-fit items-center border px-2.5 py-1 text-xs font-semibold ${toneClassName}`}
+      className={`inline-flex w-fit items-center rounded-sm border px-2.5 py-1 text-xs font-semibold ${toneClassName}`}
     >
       {children}
     </span>

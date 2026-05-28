@@ -62,20 +62,25 @@ export function CourseReviewReportDownloadPanel({
   }
 
   return (
-    <section className="w-full border border-zinc-200 bg-white shadow-sm">
+    <section className="w-full rounded-md border border-zinc-200 bg-white shadow-sm">
       <div className="border-b border-zinc-200 px-4 py-4 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-zinc-950">
-              Generate DOCX Report
-            </h2>
-            <p className="text-sm text-zinc-600">
-              Download the report using the validated preview results.
-            </p>
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-sm border border-[#A6192E] bg-[#A6192E] text-xs font-semibold text-white">
+              5
+            </span>
+            <div>
+              <h2 className="text-lg font-semibold text-zinc-950">
+                Generate DOCX Report
+              </h2>
+              <p className="text-sm text-zinc-600">
+                Download the report using the validated preview results.
+              </p>
+            </div>
           </div>
           <button
             type="button"
-            className="h-10 border border-zinc-900 bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:border-zinc-300 disabled:bg-zinc-200 disabled:text-zinc-500"
+            className="h-10 cursor-pointer rounded-sm border border-zinc-900 bg-zinc-950 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:border-zinc-300 disabled:bg-zinc-200 disabled:text-zinc-500"
             disabled={isGenerating}
             onClick={handleDownload}
           >
@@ -87,12 +92,12 @@ export function CourseReviewReportDownloadPanel({
       {errorMessage.length > 0 || successMessage.length > 0 ? (
         <div className="p-4 sm:p-6">
           {errorMessage.length > 0 ? (
-            <div className="border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
+            <div className="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
               {errorMessage}
             </div>
           ) : null}
           {successMessage.length > 0 ? (
-            <div className="border border-[#D4AF37] bg-[#FFF8E1] px-4 py-3 text-sm text-[#7A5B00]">
+            <div className="rounded-md border border-[#D4AF37] bg-[#FFF8E1] px-4 py-3 text-sm text-[#7A5B00]">
               {successMessage}
             </div>
           ) : null}
