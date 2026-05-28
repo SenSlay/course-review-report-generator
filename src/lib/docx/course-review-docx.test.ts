@@ -108,6 +108,9 @@ describe("course review DOCX generation", () => {
     expect(getDocumentText(documentXml)).not.toContain("2022-23");
     expect(getDocumentText(documentXml)).not.toContain("3 Q");
     expect(getDocumentText(documentXml)).not.toContain("CSS130 BM2");
+    expect(getDocumentText(documentXml)).not.toContain("John Paul Tomas");
+    expect(getDocumentText(documentXml)).not.toContain("Joel De Goma");
+    expect(getDocumentText(documentXml)).not.toContain("Gloren S. Fuentes");
     expect(documentXml).not.toContain("{#sections}");
     expect(documentXml).not.toContain("{#outcomes}");
   });
