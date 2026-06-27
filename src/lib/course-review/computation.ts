@@ -120,20 +120,28 @@ export function computeSectionResult(
   mapping: SectionCourseOutcomeMappingState,
 ): SectionResult {
   const validRows = parsedSection.rows.filter((row) => row.isValidStudent);
-  const outcomes = COURSE_OUTCOME_CODES.map((coCode) => {
+  const outcomes = COURSE_OUTCOME_CODES.flatMap((coCode) => {
+    const columnKey = mapping[coCode];
+
+    if (!columnKey) {
+      return [];
+    }
+
     const column = parsedSection.assessmentColumns.find(
-      (assessmentColumn) => assessmentColumn.key === mapping[coCode],
+      (assessmentColumn) => assessmentColumn.key === columnKey,
     );
 
     if (!column) {
       throw new Error(`${coCode} mapping is missing or invalid.`);
     }
 
-    return computeOutcomeResult({
-      coCode,
-      column,
-      rows: validRows,
-    });
+    return [
+      computeOutcomeResult({
+        coCode,
+        column,
+        rows: validRows,
+      }),
+    ];
   });
 
   return {

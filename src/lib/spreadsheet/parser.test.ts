@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { parseSpreadsheetBuffer } from "./parser";
 import {
   inferCourseCodeFromFileName,
+  inferReportMetadataFromFileName,
   inferSectionNameFromFileName,
 } from "./section-name";
 
@@ -94,6 +95,33 @@ describe("spreadsheet parser", () => {
         "gc_CSS188-3_FOPM01_2T3031_fullgc_2030-05-18-09-57-51.xls",
       ),
     ).toBe("CSS188-3");
+  });
+
+  it("infers report metadata from a Grade Center filename", () => {
+    expect(
+      inferReportMetadataFromFileName("gc_CSS188-3_FOPM01_2T3031_fullg.xls"),
+    ).toEqual({
+      academicYear: "2030-2031",
+      quarter: "2T",
+    });
+  });
+
+  it("infers report metadata from a timestamped Grade Center filename", () => {
+    expect(
+      inferReportMetadataFromFileName(
+        "gc_CSS188-3_FOPM01_2T3031_fullgc_2030-05-18-09-57-51.xls",
+      ),
+    ).toEqual({
+      academicYear: "2030-2031",
+      quarter: "2T",
+    });
+  });
+
+  it("returns blank report metadata when the filename has no metadata token", () => {
+    expect(inferReportMetadataFromFileName("plain-export.xls")).toEqual({
+      academicYear: "",
+      quarter: "",
+    });
   });
 
   it("returns a blank course code when the filename has no course code", () => {

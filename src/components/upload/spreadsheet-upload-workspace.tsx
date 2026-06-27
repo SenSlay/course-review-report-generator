@@ -21,13 +21,14 @@ import {
 } from "@/lib/course-review/computation";
 import { formatDateOfReview } from "@/lib/docx/course-review-docx";
 import {
-  COURSE_OUTCOME_CODES,
   createEmptySectionMapping,
+  REQUIRED_COURSE_OUTCOME_CODES,
   updateSectionMapping,
 } from "@/lib/course-review/mapping";
 import { parseSpreadsheetFile } from "@/lib/spreadsheet/parser";
 import {
   inferCourseCodeFromFileName,
+  inferReportMetadataFromFileName,
   inferSectionNameFromFileName,
 } from "@/lib/spreadsheet/section-name";
 
@@ -112,6 +113,8 @@ export function SpreadsheetUploadWorkspace() {
     createInitialReportDetails,
   );
   const [courseCodeWasEdited, setCourseCodeWasEdited] = useState(false);
+  const [academicYearWasEdited, setAcademicYearWasEdited] = useState(false);
+  const [quarterWasEdited, setQuarterWasEdited] = useState(false);
 
   function addFiles(files: FileList | File[]) {
     const fileList = Array.from(files);
@@ -156,33 +159,60 @@ export function SpreadsheetUploadWorkspace() {
         message: `${file.name} was skipped. Upload .xls or .xlsx files only.`,
       })),
     );
-    inferCourseCodeFromUploadedFiles(nextUploadedFiles);
+    inferReportDetailsFromUploadedFiles(nextUploadedFiles);
     clearComputationState();
     parseUploadedFiles(nextUploadedFiles);
   }
 
-  function inferCourseCodeFromUploadedFiles(files: UploadedSpreadsheetFile[]) {
-    if (courseCodeWasEdited) {
-      return;
-    }
-
+  function inferReportDetailsFromUploadedFiles(files: UploadedSpreadsheetFile[]) {
     const inferredCourseCode = files
       .map((uploadedFile) => inferCourseCodeFromFileName(uploadedFile.fileName))
       .find(Boolean);
-
-    if (!inferredCourseCode) {
-      return;
-    }
+    const inferredAcademicYear = files
+      .map(
+        (uploadedFile) =>
+          inferReportMetadataFromFileName(uploadedFile.fileName).academicYear,
+      )
+      .find(Boolean);
+    const inferredQuarter = files
+      .map(
+        (uploadedFile) =>
+          inferReportMetadataFromFileName(uploadedFile.fileName).quarter,
+      )
+      .find(Boolean);
 
     setReportDetails((currentDetails) => {
-      if (currentDetails.courseCode.trim().length > 0) {
-        return currentDetails;
+      const nextDetails = { ...currentDetails };
+      let hasUpdate = false;
+
+      if (
+        !courseCodeWasEdited &&
+        currentDetails.courseCode.trim().length === 0 &&
+        inferredCourseCode
+      ) {
+        nextDetails.courseCode = inferredCourseCode;
+        hasUpdate = true;
       }
 
-      return {
-        ...currentDetails,
-        courseCode: inferredCourseCode,
-      };
+      if (
+        !academicYearWasEdited &&
+        currentDetails.academicYear.trim().length === 0 &&
+        inferredAcademicYear
+      ) {
+        nextDetails.academicYear = inferredAcademicYear;
+        hasUpdate = true;
+      }
+
+      if (
+        !quarterWasEdited &&
+        currentDetails.quarter.trim().length === 0 &&
+        inferredQuarter
+      ) {
+        nextDetails.quarter = inferredQuarter;
+        hasUpdate = true;
+      }
+
+      return hasUpdate ? nextDetails : currentDetails;
     });
   }
 
@@ -359,6 +389,14 @@ export function SpreadsheetUploadWorkspace() {
       setCourseCodeWasEdited(true);
     }
 
+    if (field === "academicYear") {
+      setAcademicYearWasEdited(true);
+    }
+
+    if (field === "quarter") {
+      setQuarterWasEdited(true);
+    }
+
     setReportDetails((currentDetails) => ({
       ...currentDetails,
       [field]: value,
@@ -397,10 +435,10 @@ export function SpreadsheetUploadWorkspace() {
     .filter((parsedSection): parsedSection is ParsedSection =>
       Boolean(parsedSection),
     );
-  const allMappingsSelected =
+  const requiredMappingsSelected =
     successfullyParsedSections.length > 0 &&
     successfullyParsedSections.every((parsedSection) =>
-      COURSE_OUTCOME_CODES.every(
+      REQUIRED_COURSE_OUTCOME_CODES.every(
         (coCode) =>
           (mappingsBySectionId[parsedSection.id]?.[coCode] ?? "").length > 0,
       ),
@@ -411,7 +449,7 @@ export function SpreadsheetUploadWorkspace() {
       <WorkflowProgress
         uploadedCount={uploadedFiles.length}
         parsedCount={successfullyParsedSections.length}
-        allMappingsSelected={allMappingsSelected}
+        requiredMappingsSelected={requiredMappingsSelected}
         hasReportDetails={successfullyParsedSections.length > 0}
         reportDetailsAreFilled={Object.values(reportDetails).every(
           (value) => value.trim().length > 0,
@@ -653,14 +691,14 @@ function ParseSummary({
 function WorkflowProgress({
   uploadedCount,
   parsedCount,
-  allMappingsSelected,
+  requiredMappingsSelected,
   hasReportDetails,
   reportDetailsAreFilled,
   hasPreview,
 }: {
   uploadedCount: number;
   parsedCount: number;
-  allMappingsSelected: boolean;
+  requiredMappingsSelected: boolean;
   hasReportDetails: boolean;
   reportDetailsAreFilled: boolean;
   hasPreview: boolean;
@@ -679,10 +717,10 @@ function WorkflowProgress({
       status:
         parsedCount === 0
           ? "pending"
-          : allMappingsSelected
+          : requiredMappingsSelected
             ? "complete"
             : "current",
-      detail: allMappingsSelected ? "Ready" : "CO1 to CO3 required",
+      detail: requiredMappingsSelected ? "Ready" : "CO1 and CO2 required",
     },
     {
       label: "Report Details",
@@ -695,7 +733,11 @@ function WorkflowProgress({
     },
     {
       label: "Preview Results",
-      status: hasPreview ? "complete" : allMappingsSelected ? "current" : "pending",
+      status: hasPreview
+        ? "complete"
+        : requiredMappingsSelected
+          ? "current"
+          : "pending",
       detail: hasPreview ? "Validated" : "Required before DOCX",
     },
     {

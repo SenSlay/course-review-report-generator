@@ -6,6 +6,7 @@ import type {
 } from "@/types/course-review";
 import {
   COURSE_OUTCOME_CODES,
+  REQUIRED_COURSE_OUTCOME_CODES,
   getMissingMappingCodes,
   getPrioritizedAssessmentColumns,
 } from "@/lib/course-review/mapping";
@@ -42,8 +43,7 @@ export function CourseOutcomeMappingPanel({
                 Map Course Outcomes
               </h2>
               <p className="text-sm text-zinc-600">
-                Select one assessment column for each Course Outcome per
-                section.
+                Select assessment columns for required outcomes per section.
               </p>
             </div>
           </div>
@@ -81,7 +81,7 @@ export function CourseOutcomeMappingPanel({
                     >
                       {missingMappings.length > 0
                         ? `${missingMappings.length} mappings missing`
-                        : "All mappings selected"}
+                        : "Required mappings selected"}
                     </StatusBadge>
                   </div>
                 </div>
@@ -99,6 +99,9 @@ export function CourseOutcomeMappingPanel({
                     <CourseOutcomeSelect
                       key={coCode}
                       coCode={coCode}
+                      isRequired={REQUIRED_COURSE_OUTCOME_CODES.includes(
+                        coCode,
+                      )}
                       parsedSection={parsedSection}
                       value={mapping?.[coCode] ?? ""}
                       onChange={(columnKey) =>
@@ -114,7 +117,7 @@ export function CourseOutcomeMappingPanel({
                   </p>
                 ) : (
                   <p className="rounded-sm border-l-4 border-[#D4AF37] bg-[#FFF8E1] px-3 py-2 text-xs font-medium text-[#7A5B00]">
-                    All Course Outcomes have selected assessment columns.
+                    Required Course Outcomes have selected assessment columns.
                   </p>
                 )}
               </div>
@@ -128,11 +131,13 @@ export function CourseOutcomeMappingPanel({
 
 function CourseOutcomeSelect({
   coCode,
+  isRequired,
   parsedSection,
   value,
   onChange,
 }: {
   coCode: CourseOutcomeCode;
+  isRequired: boolean;
   parsedSection: ParsedSection;
   value: string;
   onChange: (columnKey: string) => void;
@@ -142,7 +147,8 @@ function CourseOutcomeSelect({
     coCode,
   );
   const inputId = `${parsedSection.id}-${coCode}`;
-  const hasMissingMapping = value.length === 0;
+  const hasSelectedMapping = value.length > 0;
+  const hasMissingMapping = isRequired && !hasSelectedMapping;
 
   return (
     <div className="rounded-md border border-zinc-200 bg-white p-3">
@@ -151,12 +157,14 @@ function CourseOutcomeSelect({
         className="mb-2 flex items-center justify-between gap-2 text-sm font-semibold text-zinc-950"
       >
         <span>{coCode}</span>
-        {hasMissingMapping ? (
-          <span className="text-xs font-semibold text-red-700">Required</span>
-        ) : (
+        {hasSelectedMapping ? (
           <span className="text-xs font-semibold text-[#7A5B00]">
             Selected
           </span>
+        ) : isRequired ? (
+          <span className="text-xs font-semibold text-red-700">Required</span>
+        ) : (
+          <span className="text-xs font-semibold text-zinc-500">Optional</span>
         )}
       </label>
       <select
@@ -167,7 +175,11 @@ function CourseOutcomeSelect({
         }`}
         onChange={(event) => onChange(event.target.value)}
       >
-        <option value="">Select assessment column</option>
+        <option value="">
+          {isRequired
+            ? "Select assessment column"
+            : "Select assessment column (optional)"}
+        </option>
         {groupedColumns.length > 0 ? (
           <optgroup label={`${coCode} grouped options`}>
             {groupedColumns.map((column) => (
@@ -190,6 +202,10 @@ function CourseOutcomeSelect({
       {hasMissingMapping ? (
         <p className="mt-2 text-xs font-medium text-red-700">
           Select the assessment column used for {coCode}.
+        </p>
+      ) : !isRequired && !hasSelectedMapping ? (
+        <p className="mt-2 text-xs font-medium text-zinc-500">
+          Leave blank when this course does not use {coCode}.
         </p>
       ) : null}
     </div>

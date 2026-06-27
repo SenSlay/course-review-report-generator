@@ -142,8 +142,8 @@ export function CourseReviewPreviewPanel({
           </div>
         ) : (
           <div className="rounded-md border border-zinc-200 bg-zinc-50 px-4 py-6 text-center text-sm text-zinc-600">
-            Preview will appear here after every section has CO1, CO2, and CO3
-            mappings.
+            Preview will appear here after every section has required Course
+            Outcome mappings.
           </div>
         )}
       </div>

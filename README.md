@@ -7,8 +7,8 @@ Live app: https://course-review-report-generator.vercel.app/
 ## What It Does
 
 - Upload one `.xls` or `.xlsx` grade spreadsheet per section.
-- Infer section names and course codes from Grade Center filenames when possible.
-- Let the user manually map CO1, CO2, and CO3 to assessment columns per section.
+- Infer section names, course codes, academic years, and quarters from Grade Center filenames when possible.
+- Let the user manually map required CO1 and CO2 assessment columns per section, with optional CO3 mapping when the course uses CO3.
 - Compute frequency, percentage, and PASSED/FAILED remarks deterministically.
 - Show a preview before report generation.
 - Generate a filled DOCX report from the app-ready course review template.
@@ -28,7 +28,7 @@ Open `http://localhost:3000`.
 
 1. Upload Grade Center exports, using one spreadsheet for each section.
 2. Confirm or edit the detected section name for each uploaded file.
-3. Select one assessment column for CO1, CO2, and CO3 in every section.
+3. Select assessment columns for CO1 and CO2 in every section; select CO3 only when the course uses CO3.
 4. Fill or edit the report header details.
 5. Generate the preview and check the computed values.
 6. Download the DOCX report.

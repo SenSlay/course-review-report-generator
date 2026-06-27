@@ -57,9 +57,9 @@ Requirements:
 - Each spreadsheet becomes one section.
 - Show uploaded files in the UI.
 - Allow file removal before computation.
-- Infer section name from filename.
+- Infer section name, course code, academic year, and quarter from filename.
 - Allow user to manually edit section name.
-- Grade Center filenames such as `gc_CSS188-3_FOPM01_2T3031_fullgc_...xls` should infer `FOPM01` when possible.
+- Grade Center filenames such as `gc_CSS188-3_FOPM01_2T3031_fullgc_...xls` should infer `FOPM01`, `CSS188-3`, quarter `2T`, and academic year `2030-2031` when possible.
 
 Do not implement DOCX generation yet.
 
@@ -95,9 +95,9 @@ Create a mapping UI grouped by section.
 
 For each section, the user should select assessment columns for:
 
-- CO1
-- CO2
-- CO3
+- CO1 required
+- CO2 required
+- CO3 optional
 
 The UI should show the detected assessment columns as dropdown options.
 

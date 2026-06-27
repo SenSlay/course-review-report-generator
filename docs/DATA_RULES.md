@@ -4,14 +4,16 @@
 
 1. One spreadsheet represents one course section.
 2. Multiple spreadsheets can be uploaded for one course review report.
-3. Each Course Outcome is evaluated using one selected assessment/activity column.
-4. The user manually selects the assessment/activity column for each Course Outcome.
-5. Minimum satisfactory score is 70%.
-6. Target percentage of students passed is 70%.
-7. Recommendations are not auto-filled.
-8. The generated report should include one course outcome table per section.
-9. Grade Center `.xls` exports may be UTF-16 tab-delimited text files.
-10. `CO1 Grade`, `CO2 Grade`, and `CO3 Grade` columns mark Course Outcome assessment groups when present.
+3. Required Course Outcomes CO1 and CO2 are each evaluated using one selected assessment/activity column.
+4. CO3 is optional and is evaluated only when the user selects a CO3 assessment/activity column.
+5. The user manually selects assessment/activity columns; the system must not guess mappings.
+6. Minimum satisfactory score is 70%.
+7. Target percentage of students passed is 70%.
+8. Recommendations are not auto-filled.
+9. The generated report should include one course outcome table per section.
+10. Grade Center `.xls` exports may be UTF-16 tab-delimited text files.
+11. `CO1 Grade`, `CO2 Grade`, and `CO3 Grade` columns mark Course Outcome assessment groups when present.
+12. Grade Center filenames may include report metadata tokens such as `2T3031`, where `2T` is the quarter and `3031` becomes academic year `2030-2031`.
 
 ## Spreadsheet Export Format
 
@@ -27,6 +29,7 @@ For Grade Center exports:
 ## Course Outcome Mapping
 
 Mapping is done per section.
+CO1 and CO2 mappings are required. CO3 mapping is optional and should be left blank when the course does not use CO3.
 
 Example:
 
@@ -59,7 +62,7 @@ Default grouping rule:
 - Assessment columns after `CO2 Grade` and before `CO3 Grade` belong to the CO3 group.
 - Assessment columns after `CO3 Grade` should not be assigned to a CO group unless a future rule explicitly supports it.
 
-These groups are only UI guidance. The user must still manually select the assessment/activity column for each Course Outcome.
+These groups are only UI guidance. The user must still manually select the assessment/activity column for each required Course Outcome, and may manually select CO3 when applicable.
 
 ## Student Counting
 

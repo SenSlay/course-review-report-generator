@@ -8,7 +8,7 @@ The system processes student grade spreadsheets, allows users to map assessment/
 
 ## Problem
 
-Course reviewers manually compute how many students passed selected assessment tasks for each Course Outcome. They also manually fill the course review template with the assessment task, frequency, percentage, and pass/fail remarks.
+Course reviewers manually compute how many students passed selected assessment tasks for required and selected Course Outcomes. They also manually fill the course review template with the assessment task, frequency, percentage, and pass/fail remarks.
 
 This process is repetitive, time-consuming, and prone to computation or formatting errors.
 
@@ -25,7 +25,7 @@ The MVP should support:
 
 1. Multiple spreadsheet upload
 2. One spreadsheet per section
-3. Section name detection from filename
+3. Section name, course code, academic year, and quarter detection from filename
 4. Manual section name editing
 5. Per-section Course Outcome mapping
 6. Computation of frequency, percentage, and remarks
@@ -51,6 +51,7 @@ Each uploaded file should become one section in the app.
 ### 2. Section Detection
 
 The system should infer the section name from the uploaded filename when possible.
+The system should infer the course code, academic year, and quarter from the uploaded filename when possible.
 
 The user should be able to manually edit the section name before generating the report.
 
@@ -101,7 +102,7 @@ Boundary detection may be used to group assessment options in the UI, but it mus
 
 ### 5. Per-Section Course Outcome Mapping
 
-For each uploaded section, the user must select which assessment/activity column belongs to each Course Outcome.
+For each uploaded section, the user must select which assessment/activity column belongs to CO1 and CO2. CO3 is optional and should be selected only when the course uses CO3.
 
 Example:
 
@@ -125,11 +126,13 @@ Do not implement reusable saved mappings.
 
 ### 6. Computation
 
-For each Course Outcome in each section, compute:
+For each required or selected Course Outcome in each section, compute:
 
 - Frequency of students who passed
 - Percentage of students who passed
 - PASSED or FAILED remarks
+
+When CO3 is left blank, compute only CO1 and CO2 for that section.
 
 Default criteria:
 

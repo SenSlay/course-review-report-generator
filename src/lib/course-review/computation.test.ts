@@ -66,6 +66,25 @@ describe("course review computation", () => {
     ]);
   });
 
+  it("computes a section result when CO3 is left blank", () => {
+    const parsedSection = createParsedSection();
+    const result = computeCourseReviewResult({
+      parsedSections: [parsedSection],
+      mappingsBySectionId: {
+        section_1: {
+          CO1: "co1",
+          CO2: "co2",
+          CO3: "",
+        },
+      },
+    });
+
+    expect(result.sections[0].outcomes).toHaveLength(2);
+    expect(result.sections[0].outcomes.map((outcome) => outcome.coCode)).toEqual(
+      ["CO1", "CO2"],
+    );
+  });
+
   it("validates missing mappings before computation", () => {
     const errors = validateCourseReviewComputation({
       parsedSections: [createParsedSection()],
@@ -78,7 +97,7 @@ describe("course review computation", () => {
       },
     });
 
-    expect(errors.map((error) => error.coCode)).toEqual(["CO2", "CO3"]);
+    expect(errors.map((error) => error.coCode)).toEqual(["CO2"]);
   });
 
   it("validates selected columns with no numeric scores", () => {
@@ -100,6 +119,26 @@ describe("course review computation", () => {
       expect.objectContaining({
         coCode: "CO1",
         message: "FOPM01 CO1 selected column has no numeric scores.",
+      }),
+    ]);
+  });
+
+  it("validates an invalid selected CO3 column", () => {
+    const errors = validateCourseReviewComputation({
+      parsedSections: [createParsedSection()],
+      mappingsBySectionId: {
+        section_1: {
+          CO1: "co1",
+          CO2: "co2",
+          CO3: "missing-co3",
+        },
+      },
+    });
+
+    expect(errors).toEqual([
+      expect.objectContaining({
+        coCode: "CO3",
+        message: "FOPM01 CO3 selected column was not found.",
       }),
     ]);
   });

@@ -5,6 +5,10 @@ import type {
 } from "@/types/course-review";
 
 export const COURSE_OUTCOME_CODES: CourseOutcomeCode[] = ["CO1", "CO2", "CO3"];
+export const REQUIRED_COURSE_OUTCOME_CODES: CourseOutcomeCode[] = [
+  "CO1",
+  "CO2",
+];
 
 export function createEmptySectionMapping(): SectionCourseOutcomeMappingState {
   return {
@@ -34,7 +38,9 @@ export function getPrioritizedAssessmentColumns(
 export function getMissingMappingCodes(
   mapping: SectionCourseOutcomeMappingState,
 ) {
-  return COURSE_OUTCOME_CODES.filter((coCode) => mapping[coCode].length === 0);
+  return REQUIRED_COURSE_OUTCOME_CODES.filter(
+    (coCode) => mapping[coCode].length === 0,
+  );
 }
 
 export function updateSectionMapping(

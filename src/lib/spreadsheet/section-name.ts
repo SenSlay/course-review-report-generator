@@ -3,6 +3,7 @@ const TRAILING_EXPORT_TOKEN_PATTERN =
   /(?:[_\s-]+(?:fullgc|fullgradecenter|gradecenter|export))$/i;
 const COURSE_CODE_PATTERN = /^[a-z]+\d{3,}(?:-\d+)?$/i;
 const SECTION_CODE_PATTERN = /^[a-z]{2,}\d{2,}[a-z0-9-]*$/i;
+const REPORT_METADATA_PATTERN = /(?:^|[_\s-])([1-4]T)(\d{4})(?=[_\s.-]|$)/i;
 
 function normalizeFileName(fileName: string) {
   return fileName
@@ -24,6 +25,26 @@ export function inferCourseCodeFromFileName(fileName: string) {
     .find((token) => COURSE_CODE_PATTERN.test(token));
 
   return courseCode ?? "";
+}
+
+export function inferReportMetadataFromFileName(fileName: string) {
+  const match = fileName.match(REPORT_METADATA_PATTERN);
+
+  if (!match) {
+    return {
+      academicYear: "",
+      quarter: "",
+    };
+  }
+
+  const [, quarter, academicYearCode] = match;
+  const startYear = academicYearCode.slice(0, 2);
+  const endYear = academicYearCode.slice(2, 4);
+
+  return {
+    academicYear: `20${startYear}-20${endYear}`,
+    quarter: quarter.toUpperCase(),
+  };
 }
 
 export function inferSectionNameFromFileName(fileName: string) {

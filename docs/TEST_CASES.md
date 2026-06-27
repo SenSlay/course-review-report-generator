@@ -78,17 +78,34 @@ Expected result:
 - App prevents computation or report generation
 - App shows a validation message explaining that CO1 mapping is required
 
+## Test Case 6A - Optional CO3 Mapping
+
+Input:
+
+- User uploads spreadsheet
+- User selects valid CO1 and CO2 assessment columns
+- User leaves CO3 blank
+
+Expected result:
+
+- App allows preview generation
+- Computed section result includes CO1 and CO2 only
+- Generated DOCX does not require a CO3 row
+
 ## Test Case 7 - Edited Section Name
 
 Input:
 
 - Uploaded filename is gc_CSS188-3_FOPM01_2T3031_fullgc_2030-05-18-09-57-51.xls
 - System infers section name as FOPM01
+- System infers quarter as 2T
+- System infers academic year as 2030-2031
 - User may edit section name if needed
 
 Expected result:
 
 - Preview uses the confirmed section name
+- Report details show the inferred quarter and academic year unless the user edits them
 - Generated DOCX uses the confirmed section name
 
 ## Test Case 8 - DOCX Export

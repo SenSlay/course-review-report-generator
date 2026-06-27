@@ -50,14 +50,24 @@ describe("course outcome mapping helpers", () => {
     });
   });
 
-  it("detects missing mappings", () => {
+  it("detects missing required mappings", () => {
     expect(
       getMissingMappingCodes({
         CO1: "co1_a",
         CO2: "",
         CO3: "",
       }),
-    ).toEqual(["CO2", "CO3"]);
+    ).toEqual(["CO2"]);
+  });
+
+  it("does not require CO3 mapping", () => {
+    expect(
+      getMissingMappingCodes({
+        CO1: "co1_a",
+        CO2: "co2_a",
+        CO3: "",
+      }),
+    ).toEqual([]);
   });
 });
 
