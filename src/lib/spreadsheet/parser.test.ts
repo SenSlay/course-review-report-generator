@@ -89,6 +89,27 @@ describe("spreadsheet parser", () => {
     ).toBe("FOPM01");
   });
 
+  it("infers short section names after the course code", () => {
+    expect(
+      inferSectionNameFromFileName(
+        "CSS182-03 BM2 2T2526 fullgc 2026-06-18-12-18-58.xls",
+      ),
+    ).toBe("BM2");
+    expect(
+      inferSectionNameFromFileName(
+        "gc CSS182-03 CM2 2T2526 fullgc 2026-06-18-12-19-20.xls",
+      ),
+    ).toBe("CM2");
+  });
+
+  it("keeps the full section name between the course code and report metadata", () => {
+    expect(
+      inferSectionNameFromFileName(
+        "gc_CSS182-03_BSCS 2A Lab_2T2526_fullgc_2026-06-18-12-19-20.xls",
+      ),
+    ).toBe("BSCS 2A Lab");
+  });
+
   it("infers the course code from a Grade Center filename", () => {
     expect(
       inferCourseCodeFromFileName(

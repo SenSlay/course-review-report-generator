@@ -2,8 +2,10 @@ const EXCEL_EXTENSION_PATTERN = /\.(xlsx|xls)$/i;
 const TRAILING_EXPORT_TOKEN_PATTERN =
   /(?:[_\s-]+(?:fullgc|fullgradecenter|gradecenter|export))$/i;
 const COURSE_CODE_PATTERN = /^[a-z]+\d{3,}(?:-\d+)?$/i;
-const SECTION_CODE_PATTERN = /^[a-z]{2,}\d{2,}[a-z0-9-]*$/i;
 const REPORT_METADATA_PATTERN = /(?:^|[_\s-])([1-4]T)(\d{4})(?=[_\s.-]|$)/i;
+const REPORT_METADATA_TOKEN_PATTERN = /^[1-4]T\d{4}$/i;
+const EXPORT_TOKEN_PATTERN = /^(fullgc|fullgradecenter|gradecenter|export)$/i;
+const TIMESTAMP_TOKEN_PATTERN = /^\d{4}-\d{2}-\d{2}(?:-\d{2}){0,3}$/;
 
 function normalizeFileName(fileName: string) {
   return fileName
@@ -14,8 +16,12 @@ function normalizeFileName(fileName: string) {
     .trim();
 }
 
-function isSectionCodeToken(token: string) {
-  return SECTION_CODE_PATTERN.test(token) && !COURSE_CODE_PATTERN.test(token);
+function isReportFileMetadataToken(token: string) {
+  return (
+    REPORT_METADATA_TOKEN_PATTERN.test(token) ||
+    EXPORT_TOKEN_PATTERN.test(token) ||
+    TIMESTAMP_TOKEN_PATTERN.test(token)
+  );
 }
 
 export function inferCourseCodeFromFileName(fileName: string) {
@@ -55,19 +61,21 @@ export function inferSectionNameFromFileName(fileName: string) {
   );
 
   if (courseCodeIndex >= 0) {
-    const sectionCode = tokens
-      .slice(courseCodeIndex + 1)
-      .find((token) => isSectionCodeToken(token));
+    const tokensAfterCourseCode = tokens.slice(courseCodeIndex + 1);
+    const metadataTokenIndex = tokensAfterCourseCode.findIndex((token) =>
+      isReportFileMetadataToken(token),
+    );
+    const sectionName = (
+      metadataTokenIndex >= 0
+        ? tokensAfterCourseCode.slice(0, metadataTokenIndex)
+        : tokensAfterCourseCode
+    )
+      .join(" ")
+      .trim();
 
-    if (sectionCode) {
-      return sectionCode;
+    if (sectionName) {
+      return sectionName;
     }
-  }
-
-  const sectionCode = tokens.find((token) => isSectionCodeToken(token));
-
-  if (sectionCode) {
-    return sectionCode;
   }
 
   return normalizedName.replace(TRAILING_EXPORT_TOKEN_PATTERN, "").trim();
